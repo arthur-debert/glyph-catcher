@@ -50,6 +50,9 @@ include = ["bin/**/*", "README.txt", "LICENSE"]
 exclude = ["**/*.lua", "**/*.csv", "**/*.txt"]
 
 
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+
 [tool.black]
 line-length = 88
 target-version = ["py39"]
