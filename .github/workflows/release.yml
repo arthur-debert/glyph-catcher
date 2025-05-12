@@ -1,0 +1,67 @@
+name: Create Release
+
+on:
+  push:
+    tags:
+      - "v*" # Run when any tag starting with 'v' is pushed
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_ROOT: ${{ github.workspace }}/glyph-catcher
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install direnv
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y direnv
+
+      - name: Set up environment variables
+        run: |
+          echo 'eval "$(direnv hook bash)"' >> ~/.bashrc
+          source ~/.bashrc
+          direnv allow .
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 2.0.0
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      - name: Create cache directory
+        run: |
+          mkdir -p .cache
+
+      - name: Generate everyday dataset
+        run: |
+          poetry run glyph-catcher generate --format lua --dataset every-day --compress --output-dir .cache
+
+      - name: Generate complete dataset
+        run: |
+          poetry run glyph-catcher generate --format lua --dataset complete --compress --output-dir .cache
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          files: |
+            .cache/unicode.every-day.lua.gz
+            .cache/unicode.complete.lua.gz
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
