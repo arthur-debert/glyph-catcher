@@ -1,0 +1,188 @@
+---
+# PRE-COMMIT HOOK CONFIGURATION
+# =============================
+#
+# This configuration follows a three-phase design:
+#
+# 1. FIX PHASE: Hooks that automatically fix issues run first
+#    - end-of-file-fixer, trailing-whitespace, formatters (shfmt, prettier,
+#      etc.)
+#    - These hooks modify files to conform to standards automatically
+#
+# 2. STAGING PHASE: After fixes, changes are staged
+#    - A single staging hook (git-add-all-fixes) stages all changes made by
+#      fix hooks
+#    - This ensures check hooks see the fixed versions of files
+#
+# 3. CHECK PHASE: Hooks that only check for issues (without fixing) run last
+#    - Linters like shellcheck, ruff, yamllint
+#    - Validators like check-yaml and unit tests
+#    - If these fail, manual fixes are required
+#
+# BENEFITS:
+# - Automatic fixing of many common issues
+# - All issues reported in a single run (fail_fast: false)
+# - Clear separation between fixable vs. non-fixable issues
+# - Prevents failures due to unfixed files (staging between phases)
+#
+# USAGE:
+# - Run `pre-commit run` to execute all hooks in sequence
+# - Let automatic fixes do their work, focus on addressing check-only errors
+
+# See https://pre-commit.com for more information
+# See https://pre-commit.com/hooks.html for more hooks
+exclude: ^\.vscode/
+fail_fast: false # Continue running hooks even if one fails
+
+# Global settings to make format hooks succeed even when they make changes
+default_install_hook_types: [pre-commit, commit-msg]
+default_stages: [pre-commit]
+repos:
+  #############################################################################
+  ### Add changed files to git to include manual fixes from last run
+  #############################################################################
+  - repo: local
+    hooks:
+      - id: git-add-all-fixes
+        name: Stage all fixes made by previous hooks
+        entry: bash -c 'git add -u'
+        language: system
+        pass_filenames: false
+        always_run: true
+  #############################################################################
+  ### Fixing Hooks Stage: issues will be fixed automatically
+  #############################################################################
+  # Initial stage for all fixing hooks
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: end-of-file-fixer
+        stages: [pre-commit]
+      - id: trailing-whitespace
+        stages: [pre-commit]
+
+  # Add prettier for comprehensive formatting across multiple languages
+  - repo: https://github.com/pre-commit/mirrors-prettier
+    rev: v3.1.0
+    hooks:
+      - id: prettier
+        # Let Prettier handle all file types it supports natively
+        # Configuration in .prettierrc.json
+        additional_dependencies:
+          - prettier@3.1.0
+        stages: [pre-commit]
+        # Exclude Python files since we use Black for those
+        exclude: '\.py$'
+
+  # Markdown linting with auto-fix
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.39.0
+    hooks:
+      - id: markdownlint
+        args: ["--config", ".markdownlint.json", "--fix"]
+        stages: [pre-commit]
+
+  # Python formatting with ruff
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.3.2
+    hooks:
+      - id: ruff
+        args: ["--fix", "--unsafe-fixes"]
+        stages: [pre-commit]
+      - id: ruff-format
+        stages: [pre-commit]
+
+  # black is just a formatter, should run last
+  - repo: https://github.com/psf/black
+    rev: 24.2.0
+    hooks:
+      - id: black
+        files: '\.py$'
+        # Configuration in pyproject.toml [tool.black]
+        stages: [pre-commit]
+  #############################################################################
+  ### Stage all fixes before checking hooks run
+  #############################################################################
+  # Add this new repo and hook after your existing hooks
+  - repo: local
+    hooks:
+      - id: stage-poetry-lock
+        name: Stage poetry.lock if modified
+        entry: bash -c 'git add poetry.lock 2>/dev/null || true'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+
+      # Run poetry check as the final stage
+      - id: poetry-check
+        name: Poetry Check (errors and warnings)
+        description: Validate the structure of the pyproject.toml file
+        entry:
+          bash -c 'output=$(poetry lock && poetry check 2>&1); status=$?; echo
+          "$output"; if [[ $status -ne 0 ]]; then exit $status; fi; if echo
+          "$output" | grep -q "Warning:"; then echo "Poetry check found
+          warnings. Treating warnings as errors."; exit 1; fi; exit 0'
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
+        # This hook:
+        # 1. Runs poetry check and captures its output
+        # 2. If poetry check exits with non-zero status, fails immediately
+        # 3. If output contains "Warning:", fails with a custom message
+        # 4. Otherwise passes
+        # Run this hook after the poetry check hook and before the git-add-all-fixes hook
+
+  - repo: local
+    hooks:
+      - id: git-add-all-fixes
+        name: Stage all fixes made by previous hooks
+        entry: bash -c 'git add -u'
+        language: system
+        pass_filenames: false
+        always_run: true
+
+  #############################################################################
+  ### Checking Hooks Stage: issues will blow up
+  #############################################################################
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-json
+        exclude: ^\.vscode/
+
+  # Enhanced YAML linting
+  - repo: https://github.com/adrienverge/yamllint
+    rev: v1.35.1
+    hooks:
+      - id: yamllint
+        args: ["--format", "parsable", "-c", ".yamllint.yaml"]
+
+  # ShellCheck hook (local)
+  - repo: local
+    hooks:
+      - id: shellcheck-warn-only
+        name: ShellCheck (warning only)
+        description: Shell script analysis tool (non-blocking)
+        entry: bash -c 'shellcheck --severity=warning --format=tty "$@" || echo
+          "ShellCheck found issues (warnings only, not blocking commit)" && exit
+          0' --
+        language: system
+        types: [shell]
+        verbose: true
+        # Make this hook always succeed, even if shellcheck finds issues
+        # This will show warnings but not block the commit
+        additional_dependencies: []
+        stages: [pre-commit]
+
+      # Run the test suite as the last step.
+      - id: tests
+        name: Run Test Suite
+        entry: "poetry run pytest "
+        language: system
+        pass_filenames: false
+        always_run: true
+        stages: [pre-commit]
