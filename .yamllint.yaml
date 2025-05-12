@@ -1,0 +1,34 @@
+---
+# Default configuration for yamllint
+extends: default
+
+rules:
+  # 80 chars should be enough, but don't fail if a line is longer
+  line-length:
+    max: 80
+    level: warning
+
+  # Accept both styles of document start
+  document-start:
+    present: true
+
+  # Don't enforce document end markers
+  document-end:
+    present: false
+
+  # Allow duplicate keys in different contexts
+  key-duplicates: enable
+
+  # Don't require consistent indentation
+  indentation:
+    spaces: 2
+    indent-sequences: consistent
+    check-multi-line-strings: false
+
+  # Don't require quotes around special characters
+  quoted-strings: disable
+
+  # Don't require comments to start with a space
+  comments:
+    require-starting-space: false
+    min-spaces-from-content: 1
