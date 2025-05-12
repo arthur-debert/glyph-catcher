@@ -1,13 +1,22 @@
-GLYPH-CATCHER 
-==============
+GLYPH-CATCHER
+-------------------------
 
 This project downloads and processes Unicode character data from multiple sources
 to create a comprehensive dataset for the Unifill Neovim plugin. The dataset
 includes character code points, actual characters, official names, categories,
 and various aliases.
 
+TLDR
+---------
+Most likely the only thing relevant for you are the actual datasets.
+They get built on new git tags and can be accessed with :
+
+   https://github.com/arthur-debert/glyph-catcher/releases/latest/download/unicode.complete.lua.gz
+   https://github.com/arthur-debert/glyph-catcher/releases/latest/download/unicode.every-day.lua.gz
+
+
 OVERVIEW
---------
+---------------
 
 Glyph-catcher is a Python package that:
 
@@ -20,7 +29,7 @@ The package is designed to be used both as a command-line tool and as a library
 in other Python applications.
 
 DATA SOURCES
------------
+-----------------------
 
 The script fetches and processes data from the following sources:
 
@@ -112,13 +121,13 @@ Commands:
 Examples:
   # Generate all formats
   glyph-catcher generate --format all
-  
+
   # Generate only Lua format with specific Unicode blocks
   glyph-catcher generate --format lua --unicode-blocks "Basic Latin" --unicode-blocks "Arrows"
-  
+
   # Clean the cache
   glyph-catcher clean-cache
-  
+
   # List available Unicode blocks
   glyph-catcher list-blocks
 
