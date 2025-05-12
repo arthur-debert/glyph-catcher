@@ -1,0 +1,41 @@
+name: Python Tests
+
+on:
+  push:
+    # No branch restriction - will run on all branches
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      PYTHON_ROOT: ${{ github.workspace }}/glyph-catcher
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install direnv
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y direnv
+
+      - name: Set up environment variables
+        run: |
+          echo 'eval "$(direnv hook bash)"' >> ~/.bashrc
+          source ~/.bashrc
+          direnv allow .
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: 2.0.0
+          virtualenvs-create: true
+          virtualenvs-in-project: true
+
+      - name: Run Tests
+        run: |
+          ./bin/unittest-python

@@ -1,0 +1,60 @@
+# Dataset configurations for Unifill
+
+# Alias sources to use when processing Unicode data
+# Available sources: formal_aliases, informative_aliases, cldr_annotations
+alias-sources:
+  - cldr_annotations
+
+datasets:
+  # Every-day dataset with common Unicode blocks (6975 characters)
+  every-day:
+    - Basic Latin
+    - Latin-1 Supplement
+    - Latin Extended-A
+    - Latin Extended-B
+    - IPA Extensions
+    - Spacing Modifier Letters
+    - Combining Diacritical Marks
+    - Greek and Coptic
+    - Currency Symbols
+    - Combining Diacriticals for Symbols
+    - Letterlike Symbols
+    - Number Forms
+    - Arrows
+    - Mathematical Operators
+    - Miscellaneous Technical
+    - Control Pictures
+    - Enclosed Alphanumerics
+    - Box Drawing
+    - Block Elements
+    - Geometric Shapes
+    - Miscellaneous Symbols
+    - Dingbats
+    - Misc Mathematical Symbols-A
+    - Supplemental Arrows-A
+    - Supplemental Arrows-B
+    - Misc Mathematical Symbols-B
+    - Supplemental Math Operators
+    - Misc Symbols and Arrows
+    - Alphabetic Presentation Forms
+    - Variation Selectors
+    - Vertical Forms
+    - Combining Half Marks
+    - Halfwidth and Fullwidth Forms
+    - Ancient Greek Numbers
+    - Ancient Symbols
+    - Musical Symbols
+    - Ancient Greek Musical Notation
+    - Mathematical Alphanumeric Symbols
+    - Arabic Mathematical Alphabetic Symbols
+    - Misc Symbols and Pictographs
+    - Emoticons
+    - Ornamental Dingbats
+    - Transport and Map Symbols
+    - Geometric Shapes Extended
+    - Supplemental Arrows-C
+    - Supplemental Symbols and Pictographs
+  
+  # Complete dataset with all Unicode blocks
+  complete:
+    - all  # Special value to include all Unicode blocks

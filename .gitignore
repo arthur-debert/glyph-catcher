@@ -1,0 +1,149 @@
+############################################
+# OSX
+############################################
+.DS_Store
+brew/Brewfile.lock.json
+
+############################################
+# Windows
+############################################
+Thumbs.db
+
+###########################################
+# Dev
+############################################
+#.vscode
+
+############################################
+# General working files
+############################################
+*.swp
+*.tmp
+*~
+
+############################################
+# Security: try to avoid disaster
+############################################
+
+# here we want to exclude the private keys.
+*private*
+.ssh/*
+*.csr
+*.key
+# it's safer to exclude everything in ssh, then whitelist public
+! .ssh/*.pub
+# everything that gnugpc says it's private
+*/gnupgp/private*
+# this is for gcloud, but sounds sane
+*credentials.db
+*access_tokens.db
+
+############################################
+# Logs, just for good measure
+############################################
+*/logs/*
+
+############################################
+# Project specific goes here
+############################################
+somepack
+notes/*
+.*-workspace
+.venv/*
+.env/*
+coverge
+*.pyc
+__pycache__/
+.VSCodeCounter/
+docs/liinked-design.md
+.coverage
+drafts/*
+
+# Python
+*.pyc
+__pycache__/
+
+# Virtual environments
+.venv/
+.env/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+pytestdebug.log
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# celery beat schedule file
+celerybeat-schedule
+
+# SageMath parsed files
+*.sage.py
+
+# dotenv
+.env
+.env.*
+.venv
+docs/_build
+.vscode/bookmarks.json
+test.yaml
+pytest.log
+
+.vscode
+*/messages.mo
+**/messages.mo
+docs/site
+tmp
+# Debian package build artifacts
+debian-build/
+*.deb
+**/__pycache__/**
+local/**
+tests/smoke/*
+
+# Temporary files
+tmp*
+# Cache directories
+cache/
