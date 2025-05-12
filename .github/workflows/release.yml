@@ -5,6 +5,10 @@ on:
     tags:
       - "v*" # Run when any tag starting with 'v' is pushed
 
+# Permissions needed for creating releases
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -41,9 +45,11 @@ jobs:
         run: |
           poetry install
 
-      - name: Create cache directory
+      - name: Create required directories
         run: |
           mkdir -p .cache
+          mkdir -p ~/.cache/glyph-catcher
+          mkdir -p ~/.local/share/glyph-catcher
 
       - name: Generate everyday dataset
         run: |
