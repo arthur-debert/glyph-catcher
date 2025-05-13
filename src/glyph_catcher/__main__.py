@@ -2,28 +2,31 @@
 Command-line interface for the glyph-catcher package.
 """
 
-import os
 import click
-from typing import Tuple, List, Dict, Any
 
-from .types import FetchOptions, ExportOptions
-from .fetcher import fetch_all_data_files, clean_cache
-from .processor import process_data_files, save_master_data_file, get_master_file_path
+from .config import (
+    DATASET_EVERYDAY,
+    DATASETS,
+    DEFAULT_CACHE_DIR,
+    DEFAULT_DATA_DIR,
+    TMP_CACHE_DIR,
+)
 from .exporter import export_data, save_source_files
-from .config import DEFAULT_CACHE_DIR, TMP_CACHE_DIR, DEFAULT_DATA_DIR, DATASETS, DATASET_EVERYDAY
+from .fetcher import clean_cache, fetch_all_data_files
+from .processor import get_master_file_path, process_data_files, save_master_data_file
+from .types import ExportOptions, FetchOptions
 
 
 def process_unicode_data(
-    fetch_options: FetchOptions,
-    export_options: ExportOptions
-) -> Tuple[bool, List[str]]:
+    fetch_options: FetchOptions, export_options: ExportOptions
+) -> tuple[bool, list[str]]:
     """
     Process Unicode data and generate output files.
-    
+
     Args:
         fetch_options: Options for fetching Unicode data files
         export_options: Options for exporting Unicode data
-        
+
     Returns:
         Tuple of (success, output_files) where success is a boolean indicating
         if the operation was successful, and output_files is a list of generated file paths.
@@ -33,27 +36,27 @@ def process_unicode_data(
     if not file_paths:
         print("Failed to fetch data files")
         return False, []
-    
+
     # Process the data files
     unicode_data, aliases_data = process_data_files(file_paths)
     if not unicode_data or not aliases_data:
         print("Failed to process data files")
         return False, []
-    
+
     # Save the processed data to the master file
     data_dir = fetch_options.data_dir or DEFAULT_DATA_DIR
     master_file_path = save_master_data_file(unicode_data, aliases_data, data_dir)
-    
+
     # Set the master file path in the export options
     if master_file_path:
         export_options.master_file_path = master_file_path
-    
+
     # Export the data
     output_files = export_data(unicode_data, aliases_data, export_options)
-    
+
     # Save the source files
     save_source_files(file_paths, export_options.output_dir)
-    
+
     return bool(output_files), output_files
 
 
@@ -61,7 +64,7 @@ def process_unicode_data(
 def cli():
     """
     Glyph-catcher: Download and process Unicode character data.
-    
+
     This tool downloads Unicode character data from various sources,
     processes it, and generates output in different formats for use
     with text editors and plugins.
@@ -134,22 +137,34 @@ def cli():
     default=False,
     help="Compress output files using gzip for maximum compression",
 )
-def generate(format, output_dir, use_cache, cache_dir, use_temp_cache, unicode_blocks, exit_on_error, data_dir, no_master_file, dataset, compress):
+def generate(
+    format,
+    output_dir,
+    use_cache,
+    cache_dir,
+    use_temp_cache,
+    unicode_blocks,
+    exit_on_error,
+    data_dir,
+    no_master_file,
+    dataset,
+    compress,
+):
     """
     Generate Unicode character dataset in the specified format.
-    
+
     Downloads Unicode data files, processes them, and generates output
     in the specified format. The output can be in CSV, JSON, Lua, or
     text format, or all formats at once.
-    
+
     You can filter the output to include only specific Unicode blocks
     by using the --unicode-blocks option. For example:
-    
+
     \b
     glyph-catcher generate --unicode-blocks "Basic Latin" --unicode-blocks "Greek and Coptic"
-    
+
     You can also select a predefined dataset using the --dataset option:
-    
+
     \b
     glyph-catcher generate --dataset every-day  # Default, includes common blocks (6618 characters)
     glyph-catcher generate --dataset complete   # Includes all Unicode blocks
@@ -159,27 +174,31 @@ def generate(format, output_dir, use_cache, cache_dir, use_temp_cache, unicode_b
         use_cache=use_cache,
         cache_dir=cache_dir,
         use_temp_cache=use_temp_cache,
-        data_dir=data_dir
+        data_dir=data_dir,
     )
-    
+
     # Convert unicode_blocks tuple to list if specified
     blocks_list = list(unicode_blocks) if unicode_blocks else None
-    
+
     export_options = ExportOptions(
         format_type=format,
         output_dir=output_dir,
         unicode_blocks=blocks_list,
         use_master_file=not no_master_file,
-        master_file_path=get_master_file_path(fetch_options) if not no_master_file else None,
+        master_file_path=(
+            get_master_file_path(fetch_options) if not no_master_file else None
+        ),
         dataset=dataset,
-        compress=compress
+        compress=compress,
     )
-    
+
     # Process the data
     success, output_files = process_unicode_data(fetch_options, export_options)
-    
+
     if success:
-        click.echo(click.style("✓ Unicode data processing completed successfully!", fg="green"))
+        click.echo(
+            click.style("✓ Unicode data processing completed successfully!", fg="green")
+        )
         click.echo("Generated files:")
         for file_path in output_files:
             click.echo(f"  - {file_path}")
@@ -195,7 +214,7 @@ def generate(format, output_dir, use_cache, cache_dir, use_temp_cache, unicode_b
 def info():
     """
     Display information about the Unicode data formats.
-    
+
     Shows details about the available output formats and their uses.
     """
     click.echo("Glyph-catcher: Unicode Data Format Information")
@@ -204,7 +223,9 @@ def info():
     click.echo("Available output formats:")
     click.echo("")
     click.echo("1. CSV (unicode_data.csv)")
-    click.echo("   - Tabular format with columns for code point, character, name, category, and aliases")
+    click.echo(
+        "   - Tabular format with columns for code point, character, name, category, and aliases"
+    )
     click.echo("   - Good for viewing in spreadsheet applications")
     click.echo("")
     click.echo("2. JSON (unicode_data.json)")
@@ -219,7 +240,9 @@ def info():
     click.echo("   - Pipe-separated format optimized for grep-based searching")
     click.echo("   - Used by the grep backend in Unifill")
     click.echo("")
-    click.echo("Use the 'generate' command with the --format option to create these files.")
+    click.echo(
+        "Use the 'generate' command with the --format option to create these files."
+    )
     click.echo("")
     click.echo("Unicode Block Filtering:")
     click.echo("------------------------")
@@ -236,7 +259,9 @@ def info():
     click.echo("  - Miscellaneous Symbols")
     click.echo("  - Emoticons")
     click.echo("")
-    click.echo("Example: glyph-catcher generate --unicode-blocks \"Basic Latin\" --unicode-blocks \"Emoticons\"")
+    click.echo(
+        'Example: glyph-catcher generate --unicode-blocks "Basic Latin" --unicode-blocks "Emoticons"'
+    )
 
 
 @cli.command()
@@ -255,16 +280,16 @@ def info():
 def clean_cache_cmd(use_temp_cache, cache_dir):
     """
     Clean the cache directories.
-    
+
     Removes all cached Unicode data files to ensure a fresh download
     on the next run. Useful for testing or when Unicode data is updated.
     """
     fetch_options = FetchOptions(
         use_cache=True,  # Not actually used for cleaning, but required
         cache_dir=cache_dir,
-        use_temp_cache=use_temp_cache
+        use_temp_cache=use_temp_cache,
     )
-    
+
     clean_cache(fetch_options)
     click.echo(click.style("✓ Cache cleaned successfully!", fg="green"))
     return 0
@@ -274,7 +299,7 @@ def clean_cache_cmd(use_temp_cache, cache_dir):
 def list_blocks():
     """
     List all available Unicode blocks.
-    
+
     Displays a list of all Unicode blocks that can be used with the
     --unicode-blocks option in the generate command.
     """
@@ -381,15 +406,19 @@ def list_blocks():
         "Geometric Shapes Extended",
         "Supplemental Arrows-C",
     ]
-    
+
     click.echo("Available Unicode Blocks:")
     click.echo("=========================")
     click.echo("")
     for block in blocks:
         click.echo(f"- {block}")
     click.echo("")
-    click.echo("Use these block names with the --unicode-blocks option in the generate command.")
-    click.echo("Example: glyph-catcher generate --unicode-blocks \"Basic Latin\" --unicode-blocks \"Arrows\"")
+    click.echo(
+        "Use these block names with the --unicode-blocks option in the generate command."
+    )
+    click.echo(
+        'Example: glyph-catcher generate --unicode-blocks "Basic Latin" --unicode-blocks "Arrows"'
+    )
 
 
 def main():
