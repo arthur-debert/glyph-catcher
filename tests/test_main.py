@@ -6,6 +6,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from click.testing import CliRunner
+
 from glyph_catcher.__main__ import cli, generate, info, process_unicode_data
 from glyph_catcher.types import ExportOptions, FetchOptions
 

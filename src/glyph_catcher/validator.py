@@ -62,7 +62,8 @@ def validate_csv_file(file_path: str) -> tuple[bool, Optional[str]]:
                 if len(row) < len(required_columns):
                     return (
                         False,
-                        f"Row {row_count} has insufficient columns: {len(row)} (expected at least {len(required_columns)})",
+                        f"Row {row_count} has insufficient columns: {len(row)} "
+                        f"(expected at least {len(required_columns)})",
                     )
 
         # Clean up temporary file if created
@@ -195,7 +196,8 @@ def validate_txt_file(file_path: str) -> tuple[bool, Optional[str]]:
                 if len(parts) < 5:
                     return (
                         False,
-                        f"Line {line_number} has insufficient fields: {len(parts)} (expected at least 5)",
+                        f"Line {line_number} has insufficient fields: {len(parts)} "
+                        f"(expected at least 5)",
                     )
 
                 # Find the code point field by looking for a pattern matching U+XXXX
@@ -209,7 +211,8 @@ def validate_txt_file(file_path: str) -> tuple[bool, Optional[str]]:
                 if not code_point_found:
                     return (
                         False,
-                        f"Line {line_number} has no valid code point format (expected U+XXXX)",
+                        f"Line {line_number} has no valid code point format "
+                        f"(expected U+XXXX)",
                     )
 
         return True, None

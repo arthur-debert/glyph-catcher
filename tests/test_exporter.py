@@ -56,8 +56,8 @@ class TestExporter(unittest.TestCase):
             # Write the data to the file
             write_csv_output(self.unicode_data, self.aliases_data, temp_file_path)
 
-            # The function doesn't return a value, so we just check that it ran without errors
-            # and the file was created
+            # The function doesn't return a value, so we just check that it ran
+            # without errors and the file was created
             self.assertTrue(os.path.exists(temp_file_path))
 
             # Read the file and check its contents
@@ -72,11 +72,13 @@ class TestExporter(unittest.TestCase):
 
             # Check the data rows
             self.assertIn(
-                "U+0041,A,LATIN CAPITAL LETTER A,Lu,Basic Latin,LATIN LETTER A,first letter",
+                "U+0041,A,LATIN CAPITAL LETTER A,Lu,Basic Latin,LATIN LETTER A,"
+                "first letter",
                 lines[1].strip(),
             )
             self.assertIn(
-                "U+0042,B,LATIN CAPITAL LETTER B,Lu,Basic Latin,LATIN LETTER B,second letter",
+                "U+0042,B,LATIN CAPITAL LETTER B,Lu,Basic Latin,LATIN LETTER B,"
+                "second letter",
                 lines[2].strip(),
             )
         finally:
@@ -101,8 +103,8 @@ class TestExporter(unittest.TestCase):
             # Write the data to the file
             write_json_output(self.unicode_data, self.aliases_data, temp_file_path)
 
-            # The function doesn't return a value, so we just check that it ran without errors
-            # and the file was created
+            # The function doesn't return a value, so we just check that it ran
+            # without errors and the file was created
             self.assertTrue(os.path.exists(temp_file_path))
 
             # Read the file and parse the JSON
@@ -147,8 +149,8 @@ class TestExporter(unittest.TestCase):
             # Write the data to the file
             write_lua_output(self.unicode_data, self.aliases_data, temp_file_path)
 
-            # The function doesn't return a value, so we just check that it ran without errors
-            # and the file was created
+            # The function doesn't return a value, so we just check that it ran
+            # without errors and the file was created
             self.assertTrue(os.path.exists(temp_file_path))
 
             # Read the file and check its contents
@@ -208,8 +210,8 @@ class TestExporter(unittest.TestCase):
             # Write the data to the file
             write_lua_output(unicode_data, {}, temp_file_path)
 
-            # The function doesn't return a value, so we just check that it ran without errors
-            # and the file was created
+            # The function doesn't return a value, so we just check that it ran
+            # without errors and the file was created
             self.assertTrue(os.path.exists(temp_file_path))
 
             # Read the file and check its contents
@@ -242,8 +244,8 @@ class TestExporter(unittest.TestCase):
             # Write the data to the file
             write_txt_output(self.unicode_data, self.aliases_data, temp_file_path)
 
-            # The function doesn't return a value, so we just check that it ran without errors
-            # and the file was created
+            # The function doesn't return a value, so we just check that it ran
+            # without errors and the file was created
             self.assertTrue(os.path.exists(temp_file_path))
 
             # Read the file and check its contents
@@ -253,11 +255,13 @@ class TestExporter(unittest.TestCase):
             # Check the data lines
             self.assertEqual(
                 lines[0].strip(),
-                "A|LATIN CAPITAL LETTER A|U+0041|Lu|Basic Latin|LATIN LETTER A|first letter",
+                "A|LATIN CAPITAL LETTER A|U+0041|Lu|Basic Latin|LATIN LETTER A|"
+                "first letter",
             )
             self.assertEqual(
                 lines[1].strip(),
-                "B|LATIN CAPITAL LETTER B|U+0042|Lu|Basic Latin|LATIN LETTER B|second letter",
+                "B|LATIN CAPITAL LETTER B|U+0042|Lu|Basic Latin|LATIN LETTER B|"
+                "second letter",
             )
         finally:
             # Clean up
@@ -394,7 +398,8 @@ class TestExporter(unittest.TestCase):
         )
         result = export_data(self.unicode_data, self.aliases_data, options)
 
-        # Check the result - file should still be in the output list even if validation fails
+        # Check the result - file should still be in the output list even if
+        # validation fails
         self.assertEqual(result, ["/tmp/unicode.every-day.csv"])
 
         # Check that validation was called
@@ -415,9 +420,11 @@ class TestExporter(unittest.TestCase):
         )
 
         # Mock the compress_file function to avoid actual file operations
-        with patch("glyph_catcher.exporter.compress_file"):
-            with patch("os.remove"):  # Mock os.remove to avoid removing temp files
-                result = export_data(self.unicode_data, self.aliases_data, options)
+        with (
+            patch("glyph_catcher.exporter.compress_file"),
+            patch("os.remove")  # Mock os.remove to avoid removing temp files
+        ):
+            result = export_data(self.unicode_data, self.aliases_data, options)
 
         # Check the result
         self.assertEqual(result, ["/tmp/unicode.every-day.csv.gz"])
@@ -450,7 +457,8 @@ class TestExporter(unittest.TestCase):
         # and might vary across systems
 
         # We don't test the exact copy destinations since they depend on the XDG path
-        # which varies by system. Instead, just verify copy2 was called the right number of times
+        # which varies by system. Instead, just verify copy2 was called the right
+        # number of times
         self.assertEqual(mock_copy.call_count, 3)
 
 

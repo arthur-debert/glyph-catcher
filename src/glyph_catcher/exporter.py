@@ -34,7 +34,8 @@ def export_data(
     Returns:
         List of paths to the generated output files
     """
-    # If use_master_file is True and master_file_path is provided, load data from the master file
+    # If use_master_file is True and master_file_path is provided, load data from the
+    # master file
     if options.use_master_file and options.master_file_path:
         try:
             print(f"Loading data from master file: {options.master_file_path}")
@@ -47,7 +48,8 @@ def export_data(
                 aliases_data = loaded_aliases_data
             else:
                 print(
-                    "Warning: Failed to load data from master file. Using provided data instead."
+                    "Warning: Failed to load data from master file. "
+                    "Using provided data instead."
                 )
         except Exception as e:
             print(f"Error loading master file: {e}")
@@ -61,8 +63,9 @@ def export_data(
         )
         print(f"Dataset contains {len(unicode_data)} characters")
     elif options.unicode_blocks:
+        blocks_str = ', '.join(options.unicode_blocks)
         print(
-            f"Filtering data to include only these Unicode blocks: {', '.join(options.unicode_blocks)}"
+            f"Filtering data to include only these Unicode blocks: {blocks_str}"
         )
         unicode_data, aliases_data = filter_by_unicode_blocks(
             unicode_data, aliases_data, options.unicode_blocks
@@ -392,9 +395,11 @@ def compress_file(input_filename: str, output_filename: str) -> None:
     """
     try:
         # Use the highest compression level (9) for maximum compression
-        with open(input_filename, "rb") as f_in:
-            with gzip.open(output_filename + ".gz", "wb", compresslevel=9) as f_out:
-                f_out.write(f_in.read())
+        with (
+            open(input_filename, "rb") as f_in,
+            gzip.open(output_filename + ".gz", "wb", compresslevel=9) as f_out
+        ):
+            f_out.write(f_in.read())
 
         print(f"Compressed {input_filename} to {output_filename}.gz")
     except Exception as e:
@@ -410,9 +415,11 @@ def decompress_file(input_filename: str, output_filename: str) -> None:
         output_filename: Path to the output decompressed file
     """
     try:
-        with gzip.open(input_filename, "rb") as f_in:
-            with open(output_filename, "wb") as f_out:
-                f_out.write(f_in.read())
+        with (
+            gzip.open(input_filename, "rb") as f_in,
+            open(output_filename, "wb") as f_out
+        ):
+            f_out.write(f_in.read())
 
         print(f"Decompressed {input_filename} to {output_filename}")
     except Exception as e:
