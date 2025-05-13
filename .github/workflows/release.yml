@@ -51,13 +51,16 @@ jobs:
           mkdir -p ~/.cache/glyph-catcher
           mkdir -p ~/.local/share/glyph-catcher
 
-      - name: Generate everyday dataset
+      - name: Generate datasets
         run: |
-          poetry run glyph-catcher generate --format lua --dataset every-day --compress --output-dir .cache
+          # Create output directory
+          mkdir -p .cache
 
-      - name: Generate complete dataset
-        run: |
-          poetry run glyph-catcher generate --format lua --dataset complete --compress --output-dir .cache
+          # Generate everyday dataset
+          ./bin/export-dataset --dataset every-day --format lua --output-dir .cache
+
+          # Generate complete dataset
+          ./bin/export-dataset --dataset complete --format lua --output-dir .cache
 
       - name: Create Release
         id: create_release

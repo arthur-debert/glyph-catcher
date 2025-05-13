@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# Script to export datasets to the tmp directory
+# This script is used by the release workflow
+
+set -e  # Exit on error
+
+# Default output directory
+OUTPUT_DIR="tmp"
+mkdir -p "$OUTPUT_DIR"
+
+# Parse command line arguments
+DATASET="every-day"
+FORMAT="lua"
+COMPRESS=true
+
+# Process arguments
+while [[ $# -gt 0 ]]; do
+  case $1 in
+    --dataset)
+      DATASET="$2"
+      shift 2
+      ;;
+    --format)
+      FORMAT="$2"
+      shift 2
+      ;;
+    --no-compress)
+      COMPRESS=false
+      shift
+      ;;
+    --output-dir)
+      OUTPUT_DIR="$2"
+      mkdir -p "$OUTPUT_DIR"
+      shift 2
+      ;;
+    *)
+      echo "Unknown option: $1"
+      echo "Usage: $0 [--dataset <dataset>] [--format <format>] [--no-compress] [--output-dir <dir>]"
+      exit 1
+      ;;
+  esac
+done
+
+echo "Exporting dataset: $DATASET"
+echo "Format: $FORMAT"
+echo "Output directory: $OUTPUT_DIR"
+echo "Compress: $COMPRESS"
+
+# Build the command
+CMD="poetry run glyph-catcher generate --format $FORMAT --dataset $DATASET --output-dir $OUTPUT_DIR"
+
+# Add compression flag if needed
+if [ "$COMPRESS" = true ]; then
+  CMD="$CMD --compress"
+fi
+
+# Execute the command
+echo "Executing: $CMD"
+$CMD
+
+# List the generated files
+echo "Generated files in $OUTPUT_DIR:"
+ls -la "$OUTPUT_DIR"
+
+echo "Export completed successfully!"
