@@ -252,7 +252,8 @@ def parse_names_list(filename: str) -> dict[str, list[str]]:
                 ):
                     # Extract the alias (remove the "= " prefix)
                     alias = line.lstrip()[1:].strip()
-                    # Convert code point to uppercase hex format to match unicode_char_info keys
+                    # Convert code point to uppercase hex format to match
+                    # unicode_char_info keys
                     code_point_hex = current_code_point.upper()
                     informative_aliases[code_point_hex].append(alias)
                 # Also include cross-references as aliases (lines starting with "* ")
@@ -261,7 +262,8 @@ def parse_names_list(filename: str) -> dict[str, list[str]]:
                 ):
                     # Extract the descriptive note (remove the "* " prefix)
                     note = line.lstrip()[1:].strip()
-                    # Only include if it's not too long and doesn't contain references to other characters
+                    # Only include if it's not too long and doesn't contain references
+                    # to other characters
                     if len(note) < 50 and "(" not in note and ")" not in note:
                         code_point_hex = current_code_point.upper()
                         informative_aliases[code_point_hex].append(note)
@@ -546,7 +548,8 @@ def load_master_data_file(
 
         print(f"Loaded master data file: {master_file_path}")
         print(
-            f"Loaded {len(unicode_data)} characters and {sum(len(aliases) for aliases in aliases_data.values())} aliases"
+            f"Loaded {len(unicode_data)} characters and "
+            f"{sum(len(aliases) for aliases in aliases_data.values())} aliases"
         )
 
         return unicode_data, aliases_data

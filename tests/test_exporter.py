@@ -422,7 +422,7 @@ class TestExporter(unittest.TestCase):
         # Mock the compress_file function to avoid actual file operations
         with (
             patch("glyph_catcher.exporter.compress_file"),
-            patch("os.remove")  # Mock os.remove to avoid removing temp files
+            patch("os.remove"),  # Mock os.remove to avoid removing temp files
         ):
             result = export_data(self.unicode_data, self.aliases_data, options)
 

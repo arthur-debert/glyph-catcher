@@ -7,7 +7,8 @@ from glyph_catcher.types import ExportOptions
 
 def test_compress_decompress_file():
     """Test compressing and decompressing a file."""
-    # Create a temporary file with some content - make it larger to ensure compression works
+    # Create a temporary file with some content - make it larger to ensure
+    # compression works
     with tempfile.NamedTemporaryFile(delete=False) as temp_file:
         # Create a larger file to ensure compression is effective
         temp_file.write(b"This is a test file for compression. " * 100)

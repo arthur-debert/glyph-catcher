@@ -135,7 +135,8 @@ def fetch_all_data_files(options: FetchOptions) -> dict[str, str]:
         result["cldr_annotations"] = cldr_annotations_file
     else:
         print(
-            "Warning: Failed to download CLDR annotations. Continuing without CLDR annotations."
+            "Warning: Failed to download CLDR annotations. "
+            "Continuing without CLDR annotations."
         )
 
     return result

@@ -29,10 +29,12 @@ class TestValidator(unittest.TestCase):
                 "code_point,character,name,category,block,alias_1,alias_2\n"
             )
             temp_file.write(
-                "U+0041,A,LATIN CAPITAL LETTER A,Lu,Basic Latin,LATIN LETTER A,first letter\n"
+                "U+0041,A,LATIN CAPITAL LETTER A,Lu,Basic Latin,LATIN LETTER A,"
+                "first letter\n"
             )
             temp_file.write(
-                "U+0042,B,LATIN CAPITAL LETTER B,Lu,Basic Latin,LATIN LETTER B,second letter\n"
+                "U+0042,B,LATIN CAPITAL LETTER B,Lu,Basic Latin,"
+                "LATIN LETTER B,second letter\n"
             )
             temp_file_path = temp_file.name
 
@@ -244,10 +246,12 @@ class TestValidator(unittest.TestCase):
             mode="w", delete=False, suffix=".txt"
         ) as temp_file:
             temp_file.write(
-                "A|LATIN CAPITAL LETTER A|U+0041|Lu|Basic Latin|LATIN LETTER A|first letter\n"
+                "A|LATIN CAPITAL LETTER A|U+0041|Lu|Basic Latin|LATIN LETTER A|"
+                "first letter\n"
             )
             temp_file.write(
-                "B|LATIN CAPITAL LETTER B|U+0042|Lu|Basic Latin|LATIN LETTER B|second letter\n"
+                "B|LATIN CAPITAL LETTER B|U+0042|Lu|Basic Latin|"
+                "LATIN LETTER B|second letter\n"
             )
             temp_file_path = temp_file.name
 

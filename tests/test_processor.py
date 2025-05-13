@@ -247,7 +247,8 @@ class TestProcessor(unittest.TestCase):
 
     @patch("glyph_catcher.processor.get_alias_sources")
     def test_process_data_files_merges_aliases(self, mock_get_alias_sources):
-        """Test that process_data_files correctly merges aliases from different sources."""
+        """Test that process_data_files correctly merges aliases from different sources.
+        """
         # Mock the get_alias_sources function to return all sources
         mock_get_alias_sources.return_value = [
             "formal_aliases",
@@ -413,7 +414,8 @@ class TestProcessor(unittest.TestCase):
         }
         result_unicode_data, result_aliases = process_data_files(file_paths)
 
-        # Check that the function returned None for unicode_data and an empty defaultdict for aliases_data
+        # Check that the function returned None for unicode_data and an empty
+        # defaultdict for aliases_data
         self.assertIsNone(result_unicode_data)
         self.assertEqual(result_aliases, defaultdict(list))
 
@@ -480,7 +482,8 @@ class TestProcessor(unittest.TestCase):
             # Check that duplicates were removed (case-insensitive)
             self.assertIn("0041", result_aliases)
 
-            # There should be exactly 2 unique aliases after normalization and deduplication
+            # There should be exactly 2 unique aliases after normalization and
+            # deduplication
             self.assertEqual(len(result_aliases["0041"]), 2)
 
             # Check that all expected aliases are present

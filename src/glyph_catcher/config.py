@@ -66,7 +66,10 @@ DEFAULT_DATA_DIR = os.path.join(
 TMP_CACHE_DIR = os.path.join(tempfile.gettempdir(), "glyph-catcher-cache")
 
 # User agent for HTTP requests
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+USER_AGENT = (
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+    "(KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+)
 
 
 def load_dataset_config() -> dict[str, list[str]]:
@@ -127,7 +130,8 @@ def get_alias_sources() -> list[str]:
     Get the list of alias sources to use when processing Unicode data.
 
     Returns:
-        List of alias source names (e.g., 'formal_aliases', 'informative_aliases', 'cldr_annotations')
+        List of alias source names (e.g., 'formal_aliases', 'informative_aliases',
+        'cldr_annotations')
     """
     # Default to only using CLDR annotations if config loading fails
     default_sources = [ALIAS_SOURCE_CLDR]
@@ -148,13 +152,15 @@ def get_alias_sources() -> list[str]:
                     valid_sources.append(source)
                 else:
                     print(
-                        f"Warning: Unknown alias source '{source}'. Valid sources are: {', '.join(ALIAS_SOURCES)}"
+                        f"Warning: Unknown alias source '{source}'. Valid sources are: "
+                        f"{', '.join(ALIAS_SOURCES)}"
                     )
 
             # If no valid sources were found, use the default
             if not valid_sources:
                 print(
-                    f"Warning: No valid alias sources found in config. Using default: {default_sources}"
+                    f"Warning: No valid alias sources found in config. "
+                    f"Using default: {default_sources}"
                 )
                 return default_sources
 

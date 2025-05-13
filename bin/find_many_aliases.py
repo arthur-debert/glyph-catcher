@@ -3,7 +3,8 @@
 Script to parse Unicode character data and find characters with more than 5 aliases.
 
 This script reads Unicode character data from a CSV file and analyzes the aliases,
-allowing you to find characters with the most aliases and explore the data in various ways.
+allowing you to find characters with the most aliases and explore the data in
+various ways.
 """
 
 import argparse
@@ -107,7 +108,8 @@ def display_single_character(
 ) -> None:
     """Display detailed information for a single character."""
     print(
-        f"\n--- {char_data['code_point']} - {char_data['character']} - {char_data['name']} ---"
+        f"\n--- {char_data['code_point']} - {char_data['character']} - "
+        f"{char_data['name']} ---"
     )
     print(f"Category: {char_data['category']}")
     print(f"Block: {char_data['block']}")
@@ -133,7 +135,8 @@ def display_characters(
 
     for i, char_data in enumerate(chars_data[:limit], 1):
         print(
-            f"{i}. {char_data['code_point']} - {char_data['character']} - {char_data['name']}"
+            f"{i}. {char_data['code_point']} - {char_data['character']} - "
+            f"{char_data['name']}"
         )
         print(f"   Total aliases: {char_data['alias_count']}")
 
@@ -142,7 +145,8 @@ def display_characters(
         )
         limit_display = None if show_all_aliases else 5
         print(
-            f"   Aliases: {format_aliases(aliases_sample, limit_display, wrap_width=70)[4:]}"
+            f"   Aliases: {format_aliases(aliases_sample, limit_display,
+                                         wrap_width=70)[4:]}"
         )
         print()
 
@@ -164,7 +168,8 @@ def save_to_file(
 
         for i, char_data in enumerate(chars_data, 1):
             f.write(
-                f"{i}. {char_data['code_point']} - {char_data['character']} - {char_data['name']}\n"
+                f"{i}. {char_data['code_point']} - {char_data['character']} - "
+                f"{char_data['name']}\n"
             )
             f.write(f"   Category: {char_data['category']}\n")
             f.write(f"   Block: {char_data['block']}\n")

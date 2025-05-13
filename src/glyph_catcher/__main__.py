@@ -1,4 +1,5 @@
-"""
+"ruff check""
+    e
 Command-line interface for the glyph-catcher package.
 """
 
@@ -28,8 +29,8 @@ def process_unicode_data(
         export_options: Options for exporting Unicode data
 
     Returns:
-        Tuple of (success, output_files) where success is a boolean indicating
-        if the operation was successful, and output_files is a list of generated file paths.
+        Tuple of (success, output_files) where success is a boolean indicating if the
+        operation was successful, and output_files is a list of generated file paths.
     """
     # Fetch the data files
     file_paths = fetch_all_data_files(fetch_options)
@@ -105,7 +106,8 @@ def cli():
 @click.option(
     "--unicode-blocks",
     multiple=True,
-    help="Unicode block(s) to include (can be specified multiple times). If not specified, all blocks are included.",
+    help="Unicode block(s) to include (can be specified multiple times). "
+         "If not specified, all blocks are included.",
 )
 @click.option(
     "--exit-on-error",
@@ -161,12 +163,15 @@ def generate(
     by using the --unicode-blocks option. For example:
 
     \b
-    glyph-catcher generate --unicode-blocks "Basic Latin" --unicode-blocks "Greek and Coptic"
+    glyph-catcher generate --unicode-blocks "Basic Latin" \
+        --unicode-blocks "Greek and Coptic"
+    
 
     You can also select a predefined dataset using the --dataset option:
 
     \b
-    glyph-catcher generate --dataset every-day  # Default, includes common blocks (6618 characters)
+    glyph-catcher generate --dataset every-day  # Default, includes common blocks
+                                               # (6618 characters)
     glyph-catcher generate --dataset complete   # Includes all Unicode blocks
     """
     # Create options objects
@@ -224,7 +229,8 @@ def info():
     click.echo("")
     click.echo("1. CSV (unicode_data.csv)")
     click.echo(
-        "   - Tabular format with columns for code point, character, name, category, and aliases"
+        "   - Tabular format with columns for code point, character, name, category, "
+        "and aliases"
     )
     click.echo("   - Good for viewing in spreadsheet applications")
     click.echo("")
@@ -260,7 +266,8 @@ def info():
     click.echo("  - Emoticons")
     click.echo("")
     click.echo(
-        'Example: glyph-catcher generate --unicode-blocks "Basic Latin" --unicode-blocks "Emoticons"'
+        'Example: glyph-catcher generate --unicode-blocks "Basic Latin" '
+        '--unicode-blocks "Emoticons"'
     )
 
 
@@ -417,7 +424,8 @@ def list_blocks():
         "Use these block names with the --unicode-blocks option in the generate command."
     )
     click.echo(
-        'Example: glyph-catcher generate --unicode-blocks "Basic Latin" --unicode-blocks "Arrows"'
+        'Example: glyph-catcher generate --unicode-blocks "Basic Latin" '
+        '--unicode-blocks "Arrows"'
     )
 
 

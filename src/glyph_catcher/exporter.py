@@ -63,10 +63,8 @@ def export_data(
         )
         print(f"Dataset contains {len(unicode_data)} characters")
     elif options.unicode_blocks:
-        blocks_str = ', '.join(options.unicode_blocks)
-        print(
-            f"Filtering data to include only these Unicode blocks: {blocks_str}"
-        )
+        blocks_str = ", ".join(options.unicode_blocks)
+        print(f"Filtering data to include only these Unicode blocks: {blocks_str}")
         unicode_data, aliases_data = filter_by_unicode_blocks(
             unicode_data, aliases_data, options.unicode_blocks
         )
@@ -397,7 +395,7 @@ def compress_file(input_filename: str, output_filename: str) -> None:
         # Use the highest compression level (9) for maximum compression
         with (
             open(input_filename, "rb") as f_in,
-            gzip.open(output_filename + ".gz", "wb", compresslevel=9) as f_out
+            gzip.open(output_filename + ".gz", "wb", compresslevel=9) as f_out,
         ):
             f_out.write(f_in.read())
 
@@ -417,7 +415,7 @@ def decompress_file(input_filename: str, output_filename: str) -> None:
     try:
         with (
             gzip.open(input_filename, "rb") as f_in,
-            open(output_filename, "wb") as f_out
+            open(output_filename, "wb") as f_out,
         ):
             f_out.write(f_in.read())
 

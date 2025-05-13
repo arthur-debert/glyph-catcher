@@ -54,7 +54,7 @@ datasets:
     - Geometric Shapes Extended
     - Supplemental Arrows-C
     - Supplemental Symbols and Pictographs
-  
+
   # Complete dataset with all Unicode blocks
   complete:
-    - all  # Special value to include all Unicode blocks
+    - all # Special value to include all Unicode blocks
