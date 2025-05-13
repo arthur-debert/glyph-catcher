@@ -57,6 +57,7 @@ exclude = ["**/*.lua", "**/*.csv", "**/*.txt"]
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.3.5"
+pytest-cov = "^6.1.1"
 
 [tool.black]
 line-length = 88
