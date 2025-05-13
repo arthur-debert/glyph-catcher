@@ -144,10 +144,10 @@ def display_characters(
             char_data["aliases"] if show_all_aliases else char_data["aliases"][:5]
         )
         limit_display = None if show_all_aliases else 5
-        print(
-            f"   Aliases: {format_aliases(aliases_sample, limit_display,
-                                         wrap_width=70)[4:]}"
-        )
+        aliases_formatted = format_aliases(
+            aliases_sample, limit_display, wrap_width=70
+        )[4:]
+        print(f"   Aliases: {aliases_formatted}")
         print()
 
     if len(chars_data) > limit:

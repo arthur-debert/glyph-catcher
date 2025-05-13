@@ -247,7 +247,9 @@ class TestProcessor(unittest.TestCase):
 
     @patch("glyph_catcher.processor.get_alias_sources")
     def test_process_data_files_merges_aliases(self, mock_get_alias_sources):
-        """Test that process_data_files correctly merges aliases from different sources.
+        """
+        Test that process_data_files correctly merges aliases from different
+        sources.
         """
         # Mock the get_alias_sources function to return all sources
         mock_get_alias_sources.return_value = [

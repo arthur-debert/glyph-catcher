@@ -4,7 +4,7 @@ Module for processing Unicode data files.
 
 import json
 import os
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree as ElementTree
 from collections import defaultdict
 from typing import Any, Optional
 
@@ -291,7 +291,7 @@ def parse_cldr_annotations(filename: str) -> dict[str, list[str]]:
     cldr_annotations = defaultdict(list)
 
     try:
-        tree = ET.parse(filename)
+        tree = ElementTree.parse(filename)
         root = tree.getroot()
 
         # Find all annotation elements
