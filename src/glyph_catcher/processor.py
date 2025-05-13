@@ -15,106 +15,8 @@ from .config import (
     DATASET_COMPLETE,
     get_alias_sources,
     get_dataset_blocks,
+    get_unicode_blocks,
 )
-
-# Dictionary mapping Unicode code points to their block names
-# Complete mapping for all blocks in the every-day dataset
-UNICODE_BLOCKS = {
-    # Basic Latin (ASCII): U+0000 to U+007F (128 characters)
-    range(0x0000, 0x0080): "Basic Latin",
-    # Latin-1 Supplement: U+0080 to U+00FF (128 characters)
-    range(0x0080, 0x0100): "Latin-1 Supplement",
-    # Latin Extended-A: U+0100 to U+017F (128 characters)
-    range(0x0100, 0x0180): "Latin Extended-A",
-    # Latin Extended-B: U+0180 to U+024F (208 characters)
-    range(0x0180, 0x0250): "Latin Extended-B",
-    # IPA Extensions: U+0250 to U+02AF (96 characters)
-    range(0x0250, 0x02B0): "IPA Extensions",
-    # Spacing Modifier Letters: U+02B0 to U+02FF (80 characters)
-    range(0x02B0, 0x0300): "Spacing Modifier Letters",
-    # Combining Diacritical Marks: U+0300 to U+036F (112 characters)
-    range(0x0300, 0x0370): "Combining Diacritical Marks",
-    # Greek and Coptic: U+0370 to U+03FF (135 characters)
-    range(0x0370, 0x0400): "Greek and Coptic",
-    # Cyrillic: U+0400 to U+04FF (not in every-day dataset)
-    range(0x0400, 0x0500): "Cyrillic",
-    # Currency Symbols: U+20A0 to U+20CF (31 characters)
-    range(0x20A0, 0x20D0): "Currency Symbols",
-    # Combining Diacriticals for Symbols: U+20D0 to U+20FF (33 characters)
-    range(0x20D0, 0x2100): "Combining Diacriticals for Symbols",
-    # Letterlike Symbols: U+2100 to U+214F (80 characters)
-    range(0x2100, 0x2150): "Letterlike Symbols",
-    # Number Forms: U+2150 to U+218F (60 characters)
-    range(0x2150, 0x2190): "Number Forms",
-    # Arrows: U+2190 to U+21FF (112 characters)
-    range(0x2190, 0x2200): "Arrows",
-    # Mathematical Operators: U+2200 to U+22FF (256 characters)
-    range(0x2200, 0x2300): "Mathematical Operators",
-    # Miscellaneous Technical: U+2300 to U+23FF (251 characters)
-    range(0x2300, 0x2400): "Miscellaneous Technical",
-    # Control Pictures: U+2400 to U+243F (39 characters)
-    range(0x2400, 0x2440): "Control Pictures",
-    # Enclosed Alphanumerics: U+2460 to U+24FF (160 characters)
-    range(0x2460, 0x2500): "Enclosed Alphanumerics",
-    # Box Drawing: U+2500 to U+257F (128 characters)
-    range(0x2500, 0x2580): "Box Drawing",
-    # Block Elements: U+2580 to U+259F (32 characters)
-    range(0x2580, 0x25A0): "Block Elements",
-    # Geometric Shapes: U+25A0 to U+25FF (96 characters)
-    range(0x25A0, 0x2600): "Geometric Shapes",
-    # Miscellaneous Symbols: U+2600 to U+26FF (256 characters)
-    range(0x2600, 0x2700): "Miscellaneous Symbols",
-    # Dingbats: U+2700 to U+27BF (192 characters)
-    range(0x2700, 0x27C0): "Dingbats",
-    # Misc Mathematical Symbols-A: U+27C0 to U+27EF (48 characters)
-    range(0x27C0, 0x27F0): "Misc Mathematical Symbols-A",
-    # Supplemental Arrows-A: U+27F0 to U+27FF (16 characters)
-    range(0x27F0, 0x2800): "Supplemental Arrows-A",
-    # Supplemental Arrows-B: U+2900 to U+297F (128 characters)
-    range(0x2900, 0x2980): "Supplemental Arrows-B",
-    # Misc Mathematical Symbols-B: U+2980 to U+29FF (128 characters)
-    range(0x2980, 0x2A00): "Misc Mathematical Symbols-B",
-    # Supplemental Math Operators: U+2A00 to U+2AFF (256 characters)
-    range(0x2A00, 0x2B00): "Supplemental Math Operators",
-    # Misc Symbols and Arrows: U+2B00 to U+2BFF (206 characters)
-    range(0x2B00, 0x2C00): "Misc Symbols and Arrows",
-    # Alphabetic Presentation Forms: U+FB00 to U+FB4F (58 characters)
-    range(0xFB00, 0xFB50): "Alphabetic Presentation Forms",
-    # Variation Selectors: U+FE00 to U+FE0F (16 characters)
-    range(0xFE00, 0xFE10): "Variation Selectors",
-    # Vertical Forms: U+FE10 to U+FE1F (10 characters)
-    range(0xFE10, 0xFE20): "Vertical Forms",
-    # Combining Half Marks: U+FE20 to U+FE2F (16 characters)
-    range(0xFE20, 0xFE30): "Combining Half Marks",
-    # Halfwidth and Fullwidth Forms: U+FF00 to U+FFEF (225 characters)
-    range(0xFF00, 0xFFF0): "Halfwidth and Fullwidth Forms",
-    # Ancient Greek Numbers: U+10140 to U+1018F (77 characters)
-    range(0x10140, 0x10190): "Ancient Greek Numbers",
-    # Ancient Symbols: U+10190 to U+101CF (13 characters)
-    range(0x10190, 0x101D0): "Ancient Symbols",
-    # Musical Symbols: U+1D100 to U+1D1FF (231 characters)
-    range(0x1D100, 0x1D200): "Musical Symbols",
-    # Ancient Greek Musical Notation: U+1D200 to U+1D24F (70 characters)
-    range(0x1D200, 0x1D250): "Ancient Greek Musical Notation",
-    # Mathematical Alphanumeric Symbols: U+1D400 to U+1D7FF (996 characters)
-    range(0x1D400, 0x1D800): "Mathematical Alphanumeric Symbols",
-    # Arabic Mathematical Alphabetic Symbols: U+1EE00 to U+1EEFF (143 characters)
-    range(0x1EE00, 0x1EF00): "Arabic Mathematical Alphabetic Symbols",
-    # Misc Symbols and Pictographs: U+1F300 to U+1F5FF (766 characters)
-    range(0x1F300, 0x1F600): "Misc Symbols and Pictographs",
-    # Emoticons: U+1F600 to U+1F64F (80 characters)
-    range(0x1F600, 0x1F650): "Emoticons",
-    # Ornamental Dingbats: U+1F650 to U+1F67F (48 characters)
-    range(0x1F650, 0x1F680): "Ornamental Dingbats",
-    # Transport and Map Symbols: U+1F680 to U+1F6FF (98 characters)
-    range(0x1F680, 0x1F700): "Transport and Map Symbols",
-    # Geometric Shapes Extended: U+1F780 to U+1F7FF (85 characters)
-    range(0x1F780, 0x1F800): "Geometric Shapes Extended",
-    # Supplemental Arrows-C: U+1F800 to U+1F8FF (148 characters)
-    range(0x1F800, 0x1F900): "Supplemental Arrows-C",
-    # Supplemental Symbols and Pictographs: U+1F900 to U+1F9FF (15 characters)
-    range(0x1F900, 0x1FA00): "Supplemental Symbols and Pictographs",
-}
 
 
 def get_unicode_block(code_point: int) -> str:
@@ -127,7 +29,8 @@ def get_unicode_block(code_point: int) -> str:
     Returns:
         Name of the Unicode block, or "Unknown Block" if not found
     """
-    for block_range, block_name in UNICODE_BLOCKS.items():
+    unicode_blocks = get_unicode_blocks()
+    for block_range, block_name in unicode_blocks.items():
         if code_point in block_range:
             return block_name
     return "Unknown Block"
@@ -247,9 +150,7 @@ def parse_names_list(filename: str) -> dict[str, list[str]]:
                     else:
                         current_code_point = None
                 # Check if this is an informative alias (starts with "= ")
-                elif (
-                    current_code_point and "=" in line and line.lstrip().startswith("=")
-                ):
+                elif current_code_point and "=" in line and line.lstrip().startswith("="):
                     # Extract the alias (remove the "= " prefix)
                     alias = line.lstrip()[1:].strip()
                     # Convert code point to uppercase hex format to match
@@ -257,9 +158,7 @@ def parse_names_list(filename: str) -> dict[str, list[str]]:
                     code_point_hex = current_code_point.upper()
                     informative_aliases[code_point_hex].append(alias)
                 # Also include cross-references as aliases (lines starting with "* ")
-                elif (
-                    current_code_point and "*" in line and line.lstrip().startswith("*")
-                ):
+                elif current_code_point and "*" in line and line.lstrip().startswith("*"):
                     # Extract the descriptive note (remove the "* " prefix)
                     note = line.lstrip()[1:].strip()
                     # Only include if it's not too long and doesn't contain references
@@ -617,9 +516,7 @@ def calculate_alias_statistics(aliases_data: dict[str, list[str]]) -> dict[str, 
     # Calculate statistics
     total_characters = len(aliases_data)
     total_aliases = sum(alias_counts)
-    avg_aliases_per_char = (
-        total_aliases / total_characters if total_characters > 0 else 0
-    )
+    avg_aliases_per_char = total_aliases / total_characters if total_characters > 0 else 0
 
     # Calculate median
     sorted_counts = sorted(alias_counts)

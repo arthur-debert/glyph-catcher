@@ -72,6 +72,32 @@ USER_AGENT = (
 )
 
 
+def load_config() -> dict:
+    """
+    Load configuration from config.yaml.
+
+    Returns:
+        Dictionary containing the configuration
+    """
+    # Default configuration if YAML is not available or loading fails
+    default_config = {
+        "datasets": {DATASET_EVERYDAY: [], DATASET_COMPLETE: ["all"]},
+        "alias-sources": [ALIAS_SOURCE_CLDR],
+    }
+
+    if not YAML_AVAILABLE:
+        print("Warning: PyYAML not installed. Using default configuration.")
+        return default_config
+
+    try:
+        with open(CONFIG_YAML_PATH, encoding="utf-8") as f:
+            config = yaml.safe_load(f)
+            return config if config else default_config
+    except Exception as e:
+        print(f"Error loading configuration: {e}")
+        return default_config
+
+
 def load_dataset_config() -> dict[str, list[str]]:
     """
     Load dataset configuration from config.yaml.
@@ -79,20 +105,8 @@ def load_dataset_config() -> dict[str, list[str]]:
     Returns:
         Dictionary mapping dataset names to lists of Unicode block names
     """
-    # Default configuration if YAML is not available or loading fails
-    default_config = {DATASET_EVERYDAY: [], DATASET_COMPLETE: ["all"]}
-
-    if not YAML_AVAILABLE:
-        print("Warning: PyYAML not installed. Using default dataset configuration.")
-        return default_config
-
-    try:
-        with open(CONFIG_YAML_PATH, encoding="utf-8") as f:
-            config = yaml.safe_load(f)
-            return config.get("datasets", {})
-    except Exception as e:
-        print(f"Error loading dataset configuration: {e}")
-        return default_config
+    config = load_config()
+    return config.get("datasets", {DATASET_EVERYDAY: [], DATASET_COMPLETE: ["all"]})
 
 
 def get_dataset_blocks(dataset_name: str) -> Optional[list[str]]:
@@ -136,35 +150,46 @@ def get_alias_sources() -> list[str]:
     # Default to only using CLDR annotations if config loading fails
     default_sources = [ALIAS_SOURCE_CLDR]
 
-    if not YAML_AVAILABLE:
-        print("Warning: PyYAML not installed. Using default alias sources.")
+    config = load_config()
+    sources = config.get("alias-sources", default_sources)
+
+    # Validate sources
+    valid_sources = []
+    for source in sources:
+        if source in ALIAS_SOURCES:
+            valid_sources.append(source)
+        else:
+            print(
+                f"Warning: Unknown alias source '{source}'. Valid sources are: "
+                f"{', '.join(ALIAS_SOURCES)}"
+            )
+
+    # If no valid sources were found, use the default
+    if not valid_sources:
+        print(
+            f"Warning: No valid alias sources found in config. "
+            f"Using default: {default_sources}"
+        )
         return default_sources
 
-    try:
-        with open(CONFIG_YAML_PATH, encoding="utf-8") as f:
-            config = yaml.safe_load(f)
-            sources = config.get("alias-sources", default_sources)
+    return valid_sources
 
-            # Validate sources
-            valid_sources = []
-            for source in sources:
-                if source in ALIAS_SOURCES:
-                    valid_sources.append(source)
-                else:
-                    print(
-                        f"Warning: Unknown alias source '{source}'. Valid sources are: "
-                        f"{', '.join(ALIAS_SOURCES)}"
-                    )
 
-            # If no valid sources were found, use the default
-            if not valid_sources:
-                print(
-                    f"Warning: No valid alias sources found in config. "
-                    f"Using default: {default_sources}"
-                )
-                return default_sources
+def get_unicode_blocks() -> dict[range, str]:
+    """
+    Get the Unicode blocks from config.yaml.
 
-            return valid_sources
-    except Exception as e:
-        print(f"Error loading alias sources configuration: {e}")
-        return default_sources
+    Returns:
+        Dictionary mapping code point ranges to block names
+    """
+    config = load_config()
+    blocks_config = config.get("unicode-blocks", {})
+
+    # Convert the list ranges to Python range objects
+    unicode_blocks = {}
+    for block_name, range_values in blocks_config.items():
+        if len(range_values) == 2:
+            start, end = range_values
+            unicode_blocks[range(start, end)] = block_name
+
+    return unicode_blocks
