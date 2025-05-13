@@ -92,14 +92,6 @@ repos:
       - id: ruff-format
         stages: [pre-commit]
 
-  # black is just a formatter, should run last
-  - repo: https://github.com/psf/black
-    rev: 24.2.0
-    hooks:
-      - id: black
-        files: '\.py$'
-        # Configuration in pyproject.toml [tool.black]
-        stages: [pre-commit]
   #############################################################################
   ### Stage all fixes before checking hooks run
   #############################################################################
