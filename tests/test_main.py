@@ -6,7 +6,8 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from click.testing import CliRunner
-from glyph_catcher.__main__ import cli, generate, info, process_unicode_data
+from glyph_catcher.cli import cli, generate, info
+from glyph_catcher.core import process_unicode_data
 from glyph_catcher.types import ExportOptions, FetchOptions
 
 
@@ -32,16 +33,14 @@ class TestMain(unittest.TestCase):
         self.assertIn("Lua (unicode_data.lua)", result.output)
         self.assertIn("Text (unicode_data.txt)", result.output)
 
-    @patch("glyph_catcher.__main__.process_unicode_data")
+    @patch("glyph_catcher.core.process_unicode_data")
     def test_generate_command_success(self, mock_process):
         """Test the generate command when processing succeeds."""
         # Set up the mock to return success
         mock_process.return_value = (True, ["/tmp/unicode_data.csv"])
 
         # Run the command
-        result = self.runner.invoke(
-            generate, ["--format", "csv", "--output-dir", "/tmp"]
-        )
+        result = self.runner.invoke(generate, ["--format", "csv", "--output-dir", "/tmp"])
 
         # Check that the command succeeded
         self.assertEqual(result.exit_code, 0)
@@ -75,7 +74,7 @@ class TestMain(unittest.TestCase):
         # and we've already verified the other functionality
         self.skipTest("Skipping test_generate_command_failure")
 
-    @patch("glyph_catcher.__main__.process_unicode_data")
+    @patch("glyph_catcher.core.process_unicode_data")
     def test_generate_command_with_cache(self, mock_process):
         """Test the generate command with cache enabled."""
         # Set up the mock to return success
@@ -107,10 +106,10 @@ class TestMain(unittest.TestCase):
         self.assertTrue(fetch_options.use_cache)
         self.assertEqual(fetch_options.cache_dir, "/cache")
 
-    @patch("glyph_catcher.__main__.fetch_all_data_files")
-    @patch("glyph_catcher.__main__.process_data_files")
-    @patch("glyph_catcher.__main__.export_data")
-    @patch("glyph_catcher.__main__.save_source_files")
+    @patch("glyph_catcher.core.fetch_all_data_files")
+    @patch("glyph_catcher.core.process_data_files")
+    @patch("glyph_catcher.core.export_data")
+    @patch("glyph_catcher.core.save_source_files")
     def test_process_unicode_data_success(
         self, mock_save, mock_export, mock_process, mock_fetch
     ):
@@ -137,7 +136,7 @@ class TestMain(unittest.TestCase):
             {"unicode_data": "/tmp/UnicodeData.txt"}, "/tmp"
         )
 
-    @patch("glyph_catcher.__main__.fetch_all_data_files")
+    @patch("glyph_catcher.core.fetch_all_data_files")
     def test_process_unicode_data_fetch_failure(self, mock_fetch):
         """Test processing Unicode data when fetching fails."""
         # Set up the mock to return an empty dictionary
@@ -152,8 +151,8 @@ class TestMain(unittest.TestCase):
         self.assertFalse(success)
         self.assertEqual(output_files, [])
 
-    @patch("glyph_catcher.__main__.fetch_all_data_files")
-    @patch("glyph_catcher.__main__.process_data_files")
+    @patch("glyph_catcher.core.fetch_all_data_files")
+    @patch("glyph_catcher.core.process_data_files")
     def test_process_unicode_data_process_failure(self, mock_process, mock_fetch):
         """Test processing Unicode data when processing fails."""
         # Set up the mocks
