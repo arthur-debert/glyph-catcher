@@ -1,6 +1,6 @@
 [project]
 name = "glyph-catcher"
-version = "0.1.1"
+version = "0.1.2"
 description = "Downloads and processes Unicode data into various formats for use with text editors and plugins."
 authors = [{ name = "Arthur Debert", email = "arthur@debert.xyz" }]
 readme = "README.txt"
