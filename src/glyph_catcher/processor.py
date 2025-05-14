@@ -253,6 +253,8 @@ def process_data_files(
     """
     # Parse the Unicode data files
     unicode_data = parse_unicode_data(file_paths["unicode_data"])
+    if unicode_data is None:
+        return None, {}
 
     # Get the configured alias sources
     alias_sources = get_alias_sources()
@@ -384,7 +386,6 @@ def save_master_data_file(
     from .config import MASTER_DATA_FILE
 
     if not unicode_data or not aliases_data:
-        print("Error: No data to save to master file")
         return None
 
     try:
@@ -408,11 +409,9 @@ def save_master_data_file(
         with open(master_file_path, "w", encoding="utf-8") as f:
             json.dump(master_data, f, ensure_ascii=False, indent=2)
 
-        print(f"Master data file saved to: {master_file_path}")
         return master_file_path
 
-    except Exception as e:
-        print(f"Error saving master data file: {e}")
+    except Exception:
         return None
 
 

@@ -36,7 +36,6 @@ def export_data(
     # master file
     if options.use_master_file and options.master_file_path:
         try:
-            print(f"Loading data from master file: {options.master_file_path}")
             loaded_unicode_data, loaded_aliases_data = load_master_data_file(
                 options.master_file_path
             )
@@ -44,29 +43,18 @@ def export_data(
             if loaded_unicode_data and loaded_aliases_data:
                 unicode_data = loaded_unicode_data
                 aliases_data = loaded_aliases_data
-            else:
-                print(
-                    "Warning: Failed to load data from master file. "
-                    "Using provided data instead."
-                )
-        except Exception as e:
-            print(f"Error loading master file: {e}")
-            print("Using provided data instead.")
+        except Exception:
+            pass
 
     # Filter data by dataset or Unicode blocks if specified
     if options.dataset:
-        print(f"Filtering data using dataset: {options.dataset}")
         unicode_data, aliases_data = filter_by_dataset(
             unicode_data, aliases_data, options.dataset
         )
-        print(f"Dataset contains {len(unicode_data)} characters")
     elif options.unicode_blocks:
-        blocks_str = ", ".join(options.unicode_blocks)
-        print(f"Filtering data to include only these Unicode blocks: {blocks_str}")
         unicode_data, aliases_data = filter_by_unicode_blocks(
             unicode_data, aliases_data, options.unicode_blocks
         )
-        print(f"Filtered data contains {len(unicode_data)} characters")
 
     # Create output directory if it doesn't exist
     os.makedirs(options.output_dir, exist_ok=True)
@@ -85,7 +73,6 @@ def export_data(
         # Get the exporter for this format
         exporter = registry.get_exporter(fmt)
         if not exporter:
-            print(f"No exporter found for format: {fmt}")
             continue
 
         # Get the output filename based on format and dataset
@@ -101,7 +88,6 @@ def export_data(
         success = exporter.write(unicode_data, aliases_data, temp_filename)
 
         if not success:
-            print(f"Failed to write {fmt} output")
             continue
 
         # Compress the file if requested
@@ -109,16 +95,10 @@ def export_data(
             compress_file(temp_filename, output_filename)
             os.remove(temp_filename)  # Remove the temporary uncompressed file
             output_filename = output_filename + ".gz"
-            print(f"Data compressed and written to {output_filename}")
-            # Skip validation for compressed files
         else:
-            print(f"Data written to {output_filename}")
             # Validate the exported file
-            is_valid, error_message = exporter.verify(output_filename)
-            if is_valid:
-                print(f"✓ Validation successful for {output_filename}")
-            else:
-                print(f"✗ Validation failed for {output_filename}: {error_message}")
+            exporter.verify(output_filename)
+
         output_files.append(output_filename)
 
     return output_files
@@ -162,9 +142,8 @@ def save_source_files(file_paths: dict[str, str], output_dir: str) -> None:
 
                 dest_path = os.path.join(source_files_dir, filename)
                 shutil.copy2(file_path, dest_path)
-                print(f"Saved source file: {dest_path}")
-    except Exception as e:
-        print(f"Error saving source files: {e}")
+    except Exception:
+        pass
 
 
 def compress_file(input_filename: str, output_filename: str) -> None:
@@ -182,10 +161,8 @@ def compress_file(input_filename: str, output_filename: str) -> None:
             gzip.open(output_filename + ".gz", "wb", compresslevel=9) as f_out,
         ):
             f_out.write(f_in.read())
-
-        print(f"Compressed {input_filename} to {output_filename}.gz")
-    except Exception as e:
-        print(f"Error compressing file: {e}")
+    except Exception:
+        pass
 
 
 def decompress_file(input_filename: str, output_filename: str) -> None:
@@ -202,7 +179,5 @@ def decompress_file(input_filename: str, output_filename: str) -> None:
             open(output_filename, "wb") as f_out,
         ):
             f_out.write(f_in.read())
-
-        print(f"Decompressed {input_filename} to {output_filename}")
-    except Exception as e:
-        print(f"Error decompressing file: {e}")
+    except Exception:
+        pass
