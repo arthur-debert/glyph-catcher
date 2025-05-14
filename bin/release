@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# Script to generate and push git tags for releases
+# Usage: ./bin/release [--bump]
+
+set -e  # Exit immediately if a command exits with a non-zero status
+
+# Function to extract version from pyproject.toml
+get_version() {
+    grep -m 1 "^version = " pyproject.toml | cut -d'"' -f2
+}
+
+# Check if we're in the project root (where pyproject.toml exists)
+if [ ! -f "pyproject.toml" ]; then
+    echo "Error: This script must be run from the project root directory"
+    echo "Current directory: $(pwd)"
+    exit 1
+fi
+
+# Parse arguments
+BUMP=false
+for arg in "$@"; do
+    case $arg in
+        --bump)
+            BUMP=true
+            shift
+            ;;
+    esac
+done
+
+# Get current version
+CURRENT_VERSION=$(get_version)
+echo "Current version: $CURRENT_VERSION"
+
+# If --bump flag is passed, increment the version
+if [ "$BUMP" = true ]; then
+    echo "Bumping version..."
+    poetry version patch
+
+    # Get the new version after bumping
+    NEW_VERSION=$(get_version)
+    echo "New version: $NEW_VERSION"
+
+    # Commit the updated pyproject.toml
+    git add pyproject.toml
+    git commit -m "Bump version to $NEW_VERSION"
+
+    # Push the commit
+    echo "Pushing version bump commit..."
+    git push origin HEAD
+
+    # Use the new version for tagging
+    VERSION_TO_TAG=$NEW_VERSION
+else
+    # Use the current version for tagging
+    VERSION_TO_TAG=$CURRENT_VERSION
+fi
+
+# Create and push the git tag
+echo "Creating git tag v$VERSION_TO_TAG..."
+git tag -a "v$VERSION_TO_TAG" -m "Release v$VERSION_TO_TAG"
+
+echo "Pushing git tag..."
+git push origin "v$VERSION_TO_TAG"
+
+echo "Release v$VERSION_TO_TAG completed successfully!"
