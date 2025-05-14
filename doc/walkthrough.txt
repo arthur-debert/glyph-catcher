@@ -2,15 +2,15 @@ Glyph-Catcher
 
 
 
-The glyph-cathcer is a simple command to generate unicode data sets for
+The glyph-catcher is a simple command to generate unicode data sets for
 applications aimed at helping users find unicode characters. Namely, that
-entails baking in aka's (also known as, or aliaes), skipping things like
+entails baking in aka's (also known as, or aliases), skipping things like
 control characters and also done curating a real life subset.
 
 It export these as txt (tab separated), csv, json and lua files (nvim people
-rejoice).  It purposouly does not do any smart block compression, as these will
+rejoice).  It purposefully does not do any smart block compression, as these will
 be compressed, hence are very readable. This package aims easy of handling over
-performace, hence the encoding and data formats are very laid back.
+performance, hence the encoding and data formats are very laid back.
 
 
 1. The DataSets
@@ -20,7 +20,7 @@ We export two data sets:
 
 a. Every day
 
-    All the usual suspects(emoji, math symbols, greek latters, diagrams) people
+    All the usual suspects(emoji, math symbols, greek letters, diagrams) people
     routinely want.
 
     These comprise some 6.6k characters.
@@ -37,17 +37,17 @@ b. Complete
       know!
 
     This is about 65k characters, weighting at 800kb compressed and 7MB
-    othewise.
+    otherwise.
 
 
 
 2. Get it now!
 
 
-All datasets are avaliable at :
+All datasets are available
 
 
-https://github.com/arthur-debert/glyph-catcher/releases/latest/download/unicode.<data-setg>.<format>.gz
+https://github.com/arthur-debert/glyph-catcher/releases/latest/download/unicode.<data-set>.<format>.gz
 
 Datasets available are every-day" and "complete", and formats  being txt, csv,
 json, and lua.
@@ -65,7 +65,7 @@ It will cache the original unicode consortium files if ran multiple times (so
 we don't overload the good people's machine for no good reason). These seldomly
 change, hence caching is pretty much worry free.
 
-It's a good neihbour, writing tmp file to the place it should (mktmp) and
+It's a good neighbor, writing tmp file to the place it should (mktmp) and
 cached to DFG caching paths.
 
 This is a simple tool for  non-complicated use cases, but it works and might
@@ -87,7 +87,7 @@ a. Install
 
 4. About the Dataset
 
-Remember this is here to help foks make their text nicer or cuter hence,
+Remember this is here to help folks make their text nicer or cuter hence,
 non visual characters are mostly excluded (like control points) and the common
 search terms  / aliases are included.
 
@@ -113,7 +113,7 @@ search terms  / aliases are included.
        - Data is filtered by dataset or Unicode blocks if specified
     f. Master File Creation:
        - Processed data is saved to a master JSON file which will be used to
-         generate both datasets and allformats.
+         generate both datasets and all formats.
     g. Data Export:
        - Filters the characters in the selected dataset.
        - export_data() converts the ma data to requested formats
