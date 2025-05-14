@@ -56,11 +56,22 @@ jobs:
           # Create output directory
           mkdir -p .cache
 
-          # Generate everyday dataset
-          ./bin/export-dataset --dataset every-day --format lua --output-dir .cache
+          # Available datasets
+          DATASETS=("every-day" "complete")
 
-          # Generate complete dataset
-          ./bin/export-dataset --dataset complete --format lua --output-dir .cache
+          # Available formats
+          FORMATS=("csv" "json" "lua" "txt")
+
+          # Generate all datasets in all formats
+          for dataset in "${DATASETS[@]}"; do
+            for format in "${FORMATS[@]}"; do
+              echo "Generating $dataset dataset in $format format"
+              ./bin/export-dataset --dataset "$dataset" --format "$format" --output-dir .cache
+            done
+          done
+
+          # List all generated files
+          ls -la .cache/
 
       - name: Create Release
         id: create_release
@@ -70,7 +81,13 @@ jobs:
           draft: false
           prerelease: false
           files: |
+            .cache/unicode.every-day.csv.gz
+            .cache/unicode.every-day.json.gz
             .cache/unicode.every-day.lua.gz
+            .cache/unicode.every-day.txt.gz
+            .cache/unicode.complete.csv.gz
+            .cache/unicode.complete.json.gz
             .cache/unicode.complete.lua.gz
+            .cache/unicode.complete.txt.gz
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
