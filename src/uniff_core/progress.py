@@ -2,9 +2,12 @@
 Module for displaying hierarchical progress with checkmarks/X marks.
 """
 
+import logging
 import sys
 from enum import Enum
 from typing import Optional
+
+logger = logging.getLogger("uniff")
 
 
 class ProgressStatus(Enum):
@@ -52,6 +55,9 @@ class ProgressItem:
         # Add this item as a child of its parent
         if parent:
             parent.children.append(self)
+            logger.debug(f"Created progress item '{title}' under parent '{parent.title}'")
+        else:
+            logger.debug(f"Created root progress item '{title}'")
 
     def set_status(self, status: ProgressStatus, details: Optional[str] = None) -> None:
         """
@@ -61,8 +67,13 @@ class ProgressItem:
             status: New status
             details: Optional details to display
         """
+        old_status = self.status
         self.status = status
         self.details = details
+        logger.debug(
+            f"Progress item '{self.title}' status changed: {old_status.name} -> {status.name}"
+            + (f" ({details})" if details else "")
+        )
 
         # Update the display if available
         if self.display:
@@ -93,9 +104,11 @@ class ProgressItem:
         Returns:
             True if this item and all its children are complete
         """
-        if self.status == ProgressStatus.PENDING:
-            return False
-        return all(child.is_complete() for child in self.children)
+        complete = self.status != ProgressStatus.PENDING and all(
+            child.is_complete() for child in self.children
+        )
+        logger.debug(f"Progress item '{self.title}' completion check: {complete}")
+        return complete
 
     def is_successful(self) -> bool:
         """
@@ -104,9 +117,11 @@ class ProgressItem:
         Returns:
             True if this item and all its children are successful
         """
-        if self.status != ProgressStatus.SUCCESS:
-            return False
-        return all(child.is_successful() for child in self.children)
+        successful = self.status == ProgressStatus.SUCCESS and all(
+            child.is_successful() for child in self.children
+        )
+        logger.debug(f"Progress item '{self.title}' success check: {successful}")
+        return successful
 
 
 class ProgressDisplay:
@@ -155,6 +170,7 @@ class ProgressDisplay:
 
     def update_display(self) -> None:
         """Update the progress display."""
+        logger.debug("Updating progress display")
         # Clear the previous output
         if self.last_output_lines > 0:
             sys.stdout.write(f"\033[{self.last_output_lines}A")  # Move cursor up
