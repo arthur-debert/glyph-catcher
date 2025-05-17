@@ -120,7 +120,7 @@ def save_source_files(file_paths: dict[str, str], output_dir: str) -> None:
         xdg_data_dir = os.environ.get(
             "XDG_DATA_HOME", os.path.join(os.path.expanduser("~"), ".local", "share")
         )
-        source_files_dir = os.path.join(xdg_data_dir, "glyph-catcher", "source-files")
+        source_files_dir = os.path.join(xdg_data_dir, "uniff-gen", "source-files")
 
         # Create XDG directory if it doesn't exist
         os.makedirs(source_files_dir, exist_ok=True)

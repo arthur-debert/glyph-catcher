@@ -1,5 +1,5 @@
 """
-Entry point for the glyph-catcher package.
+Entry point for the uniff-charset package.
 
 This module serves as the entry point for the package when run as a command-line tool.
 It uses cli.py to process command line arguments and core.py to execute the

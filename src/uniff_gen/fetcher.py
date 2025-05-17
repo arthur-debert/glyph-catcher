@@ -51,7 +51,7 @@ def download_file(url: str, options: FetchOptions) -> Optional[str]:
     try:
         # Create a temporary file in the system's temp directory
         temp_dir = tempfile.gettempdir()
-        temp_file_path = os.path.join(temp_dir, f"glyph-catcher-{filename}")
+        temp_file_path = os.path.join(temp_dir, f"uniff-gen-{filename}")
 
         # Add a user agent to avoid rate limiting
         headers = {"User-Agent": USER_AGENT}

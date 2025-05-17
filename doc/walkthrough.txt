@@ -1,44 +1,50 @@
-Glyph-Catcher
+uniff-gen
 
 
 
-The glyph-catcher is a simple command to generate unicode data sets for
-applications aimed at helping users find unicode characters. Namely, that
-entails baking in aka's (also known as, or aliases), skipping things like
-control characters and also done curating a real life subset.
+The uniff-gen project provides tools to generate Unicode-related datasets for
+applications aimed at helping users work with unicode characters and ligatures.
 
-It export these as txt (tab separated), csv, json and lua files (nvim people
-rejoice).  It purposefully does not do any smart block compression, as these will
-be compressed, hence are very readable. This package aims easy of handling over
-performance, hence the encoding and data formats are very laid back.
+It consists of two main commands:
+
+1. uniff-charset - Generates Unicode character datasets (previously uniff-gen)
+2. uniff-ligs - Generates ligature mapping datasets
+
+Both commands export data in various formats including txt (tab separated), csv,
+json and lua files. The package aims for ease of handling over performance, hence
+the encoding and data formats are very laid back.
 
 
 1. The DataSets
 
-We export two data sets:
+We provide several datasets:
 
 
-a. Every day
+a. Charset: Every day
 
-    All the usual suspects(emoji, math symbols, greek letters, diagrams) people
+    All the usual suspects (emoji, math symbols, greek letters, diagrams) people
     routinely want.
 
     These comprise some 6.6k characters.
     The full list of blocks can be seen in
-    src/glyph-catcher/config.yaml
+    src/uniff_charset/config.yaml
 
     The data set is about 113kb gzipped and 1.3MB otherwise.
 
-      .
-b. Complete
+b. Charset: Complete
 
     All assigned characters, which includes the OKSEIA glyph from linear A, a
-      writing system yet to be deciphered. If you crack this one, do let us
-      know!
+    writing system yet to be deciphered. If you crack this one, do let us
+    know!
 
-    This is about 65k characters, weighting at 800kb compressed and 7MB
+    This is about 65k characters, weighing at 800kb compressed and 7MB
     otherwise.
 
+c. Ligatures
+
+    Mappings of ASCII sequences to single glyphs (e.g., -> to →)
+
+    These are particularly useful for programming fonts and code editors.
 
 
 2. Get it now!
@@ -47,9 +53,10 @@ b. Complete
 All datasets are available
 
 
-https://github.com/arthur-debert/glyph-catcher/releases/latest/download/unicode.<data-set>.<format>.gz
+https://github.com/arthur-debert/uniff-gen/releases/latest/download/unicode.<data-set>.<format>.gz
+https://github.com/arthur-debert/uniff-gen/releases/latest/download/ligatures.<format>.gz
 
-Datasets available are every-day" and "complete", and formats  being txt, csv,
+Charset datasets available are "every-day" and "complete", and formats being txt, csv,
 json, and lua.
 
 The data changes very slowly. In the event this is outdated, open an issue and
@@ -61,73 +68,92 @@ I'll do a new release.
 Pretty sure you don't need this, but when I do need to touch in six months,
 future me will be glad this is here.
 
-It will cache the original unicode consortium files if ran multiple times (so
+The charset command will cache the original unicode consortium files if ran multiple times (so
 we don't overload the good people's machine for no good reason). These seldomly
 change, hence caching is pretty much worry free.
 
 It's a good neighbor, writing tmp file to the place it should (mktmp) and
-cached to DFG caching paths.
+cached to XDG caching paths.
 
-This is a simple tool for  non-complicated use cases, but it works and might
+This is a simple tool for non-complicated use cases, but it works and might
 save you some time.
 
 
 a. Install
 
-    glyph-catcher is available on pypi, hence you can
+    uniff-gen is available on pypi, hence you can
 
         --
-            pip install glyph-catcher
-            poetry add glyph-catcher
+            pip install uniff-gen
+            poetry add uniff-gen
 
         -- bash
 
-    To you hearts desire.
+    To your heart's desire.
 
 
-4. About the Dataset
+4. About the Datasets
 
-Remember this is here to help folks make their text nicer or cuter hence,
-non visual characters are mostly excluded (like control points) and the common
-search terms  / aliases are included.
+a. Charset Dataset
+
+   Remember this is here to help folks make their text nicer or cuter hence,
+   non-visual characters are mostly excluded (like control points) and the common
+   search terms / aliases are included.
+
+b. Ligatures Dataset
+
+   Provides mappings from ASCII sequences to single glyphs, which is particularly
+   useful for programming fonts and code editors that support ligatures.
 
 
 5. Code walkthrough
 
-    a. Entry Point:
-        The command-line interface is initialized through the main() function
-        in __main__.py, which sets up the Click command group.
-    b. Command Parsing: The generate command processes user options like
-    format type, output directory, caching preferences, and dataset selection.
-    c. Data Fetching : downloads required Unicode data files in
-    fetch_all_data_files() from the unicode consortium (unicode.org) website;
-         - UnicodeData.txt (character definitions)
-         - NameAliases.txt (formal aliases)
-         - NamesList.txt (informative aliases)
-         - CLDR annotations (common names)
-       - Files are cached if caching is enabled
-    d. Data Processing:
-       - process_data_files() parses the downloaded files
-       - Unicode characters are extracted with their properties
-       - Aliases are collected from multiple sources and normalized
-       - Data is filtered by dataset or Unicode blocks if specified
-    f. Master File Creation:
-       - Processed data is saved to a master JSON file which will be used to
-         generate both datasets and all formats.
-    g. Data Export:
-       - Filters the characters in the selected dataset.
-       - export_data() converts the ma data to requested formats
-       - Supported formats include CSV, JSON, Lua, and TXT
-       - Each format uses a specialized exporter from the registry
-       - Files are compressed if requested
-    g. Source File Preservation:
-       - Original Unicode data files are saved for reference
-    h. Completion:
-       - Success status and generated file paths are reported
-       - Program exits with appropriate status code
+The codebase is structured into three main packages:
 
-    The entire process transforms raw Unicode data files into structured, filtered
-    datasets optimized for different use cases like text editors and plugins.
+a. uniff_core
+   - Shared functionality used by both charset and ligature processors
+   - Contains common types, progress reporting, and exporter base classes
+
+b. uniff_charset (previously uniff_gen)
+   - Entry Point: The command-line interface is initialized through the main() function
+     in __main__.py, which sets up the Click command group.
+   - Command Parsing: The generate command processes user options like
+     format type, output directory, caching preferences, and dataset selection.
+   - Data Fetching: downloads required Unicode data files from the unicode consortium
+     - UnicodeData.txt (character definitions)
+     - NameAliases.txt (formal aliases)
+     - NamesList.txt (informative aliases)
+     - CLDR annotations (common names)
+   - Data Processing:
+     - process_data_files() parses the downloaded files
+     - Unicode characters are extracted with their properties
+     - Aliases are collected from multiple sources and normalized
+     - Data is filtered by dataset or Unicode blocks if specified
+   - Master File Creation:
+     - Processed data is saved to a master JSON file which will be used to
+       generate both datasets and all formats.
+   - Data Export:
+     - Filters the characters in the selected dataset.
+     - export_data() converts the data to requested formats
+     - Supported formats include CSV, JSON, Lua, and TXT
+     - Each format uses a specialized exporter from the registry
+     - Files are compressed if requested
+
+c. uniff_ligs
+   - Entry Point: The command-line interface is initialized through the main() function
+     in __main__.py, which sets up the Click command group.
+   - Command Parsing: The generate command processes user options like
+     format type, output directory, and compression settings.
+   - Data Processing:
+     - Maps ASCII sequences to ligature glyphs
+     - Includes descriptions for each ligature
+   - Data Export:
+     - Exports the ligature mappings to the requested format
+     - Currently supports CSV format
+     - Files are compressed if requested
+
+The entire process transforms raw data into structured, filtered
+datasets optimized for different use cases like text editors and plugins.
 
 
 NOTES

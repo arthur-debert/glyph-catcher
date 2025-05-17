@@ -1,5 +1,5 @@
 """
-Core functionality for the glyph-catcher package.
+Core functionality for the uniff-gen package.
 
 This module contains the core functionality for processing Unicode data,
 separated from CLI-specific code.
@@ -18,7 +18,7 @@ from .types import ExportOptions, FetchOptions
 # Progress message constants
 PROGRESS_FETCHING_DATA = "Fetching Data"
 PROGRESS_DOWNLOADING = (
-    "Downloading fresh data from unicode.org (or using cache at ~/.cache/glyph-catcher)"
+    "Downloading fresh data from unicode.org (or using cache at ~/.cache/uniff-gen)"
 )
 PROGRESS_UNICODE_DATA = "UnicodeData.txt: Character database"
 PROGRESS_NAMES_LIST = "NamesList.txt: Character names and annotations"

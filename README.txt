@@ -1,29 +1,35 @@
-GLYPH-CATCHER
+uniff-gen
 -------------------------
 
-This project downloads and processes Unicode character data from multiple sources
-to create a comprehensive dataset for the Unifill Neovim plugin. The dataset
-includes character code points, actual characters, official names, categories,
-and various aliases.
+This project downloads and processes Unicode data from multiple sources
+to create comprehensive datasets for text editors and plugins. It supports
+two main types of data:
+
+1. Charsets - Unicode character data (code points, names, categories, aliases)
+2. Ligatures - Mappings of character sequences to single glyphs (e.g., -> to →)
 
 TLDR
 ---------
 Most likely the only thing relevant for you are the actual datasets.
-They get built on new git tags and can be accessed with :
+They get built on new git tags and can be accessed with:
 
-   https://github.com/arthur-debert/glyph-catcher/releases/latest/download/unicode.complete.lua.gz
-   https://github.com/arthur-debert/glyph-catcher/releases/latest/download/unicode.every-day.lua.gz
-
+   https://github.com/arthur-debert/uniff-gen/releases/latest/download/unicode.complete.lua.gz
+   https://github.com/arthur-debert/uniff-gen/releases/latest/download/unicode.every-day.lua.gz
+   https://github.com/arthur-debert/uniff-gen/releases/latest/download/ligatures.csv.gz
 
 OVERVIEW
 ---------------
 
-Glyph-catcher is a Python package that:
+This project consists of two main commands:
 
-1. Downloads Unicode data files from official sources
-2. Processes the data to create a normalized dataset
-3. Saves the complete dataset to a master JSON file
-4. Exports the data to various formats for use in applications
+1. `uniff-charset`: Processes Unicode character data
+   - Downloads Unicode data files from official sources
+   - Processes the data to create a normalized character dataset
+   - Exports the data to various formats for use in applications
+
+2. `uniff-ligs`: Processes ligature mappings
+   - Generates mappings from character sequences to ligature glyphs
+   - Creates dataset files for use in text editors and plugins
 
 The package is designed to be used both as a command-line tool and as a library
 in other Python applications.
@@ -31,7 +37,7 @@ in other Python applications.
 DATA SOURCES
 -----------------------
 
-The script fetches and processes data from the following sources:
+The charset processor fetches and processes data from the following sources:
 
 1. UnicodeData.txt
    - Source: Unicode Character Database (UCD)
@@ -58,10 +64,12 @@ The script fetches and processes data from the following sources:
    - URL: https://raw.githubusercontent.com/unicode-org/cldr/main/common/annotations/en.xml
    - Format: XML file with entries like <annotation cp="→">arrow | right | right-pointing</annotation>
 
+The ligature processor works with sequence-to-glyph mappings.
+
 DATA PROCESSING PIPELINE
 -----------------------
 
-The data processing pipeline consists of three main stages:
+The character data processing pipeline consists of three main stages:
 
 1. Fetching
    - Downloads the raw Unicode data files from their sources
@@ -78,6 +86,8 @@ The data processing pipeline consists of three main stages:
    - Filters the data if specific Unicode blocks are requested
    - Exports to various formats (CSV, JSON, Lua, TXT)
 
+The ligature processing pipeline focuses on mapping character sequences to their corresponding glyphs.
+
 MASTER DATA FILE
 ---------------
 
@@ -87,7 +97,7 @@ and the exported formats. The master file:
 
 - Contains all Unicode characters and their aliases
 - Is not filtered by Unicode blocks
-- Is stored in a persistent location (by default in ~/.local/share/glyph-catcher)
+- Is stored in a persistent location (by default in ~/.local/share/uniff-gen)
 - Is used as the source for exporting to different formats
 
 This approach provides several benefits:
@@ -98,43 +108,58 @@ This approach provides several benefits:
 USAGE
 -----
 
-Basic usage:
-  poetry run glyph-catcher generate --format all
+Basic charset usage:
+  poetry run uniff-charset generate --format all
 
-Options:
+Basic ligature usage:
+  poetry run uniff-ligs generate --format csv
+
+Charset options:
   --format FORMAT        Output format: csv, json, lua, txt, or all (default: csv)
   --output-dir DIR       Output directory (default: current directory)
   --use-cache            Use cached files if available
-  --cache-dir DIR        Directory to store cached files (default: ~/.cache/glyph-catcher)
-  --use-temp-cache       Use temporary cache directory (/tmp/glyph-catcher-cache)
+  --cache-dir DIR        Directory to store cached files (default: ~/.cache/uniff-gen)
+  --use-temp-cache       Use temporary cache directory (/tmp/uniff-gen-cache)
   --unicode-blocks BLOCK Unicode block(s) to include (can be specified multiple times)
   --exit-on-error        Exit with code 1 on error
-  --data-dir DIR         Directory to store the master data file (default: ~/.local/share/glyph-catcher)
+  --data-dir DIR         Directory to store the master data file (default: ~/.local/share/uniff-gen)
   --no-master-file       Don't use the master data file for exporting
 
-Commands:
+Ligature options:
+  --format FORMAT        Output format: csv, json, lua, txt, or all (default: csv)
+  --output-dir DIR       Output directory (default: current directory)
+  --compress             Compress output files using gzip for maximum compression
+
+Charset commands:
   generate               Generate Unicode character dataset
   info                   Display information about the data formats
   clean-cache            Clean the cache directories
   list-blocks            List all available Unicode blocks
 
+Ligature commands:
+  generate               Generate ligature dataset
+  info                   Display information about ligature data
+
 Examples:
-  # Generate all formats
-  glyph-catcher generate --format all
+  # Generate all charset formats
+  uniff-charset generate --format all
 
   # Generate only Lua format with specific Unicode blocks
-  glyph-catcher generate --format lua --unicode-blocks "Basic Latin" --unicode-blocks "Arrows"
+  uniff-charset generate --format lua --unicode-blocks "Basic Latin" --unicode-blocks "Arrows"
 
   # Clean the cache
-  glyph-catcher clean-cache
+  uniff-charset clean-cache
 
   # List available Unicode blocks
-  glyph-catcher list-blocks
+  uniff-charset list-blocks
+
+  # Generate ligature data
+  uniff-ligs generate --format csv
 
 OUTPUT FORMATS
 -------------
 
-The script can generate the following output formats:
+The charset processor can generate the following output formats:
 
 1. CSV (unicode_data.csv)
    - Tabular format with columns for code point, character, name, category, and aliases
@@ -152,19 +177,14 @@ The script can generate the following output formats:
    - Pipe-separated format optimized for grep-based searching
    - Used by the grep backend in Unifill
 
+The ligature processor generates a CSV file (ligatures.csv) with columns for sequence, glyph, and description.
+
 EXAMPLE DATA
 -----------
 
 For the RIGHTWARDS ARROW character (U+2192, →):
 
-- Official name: "RIGHTWARDS ARROW"
-- Category: "Sm" (Symbol, Math)
-- Aliases:
-  - From NamesList.txt: "z notation total function"
-  - From CLDR: "arrow", "right", "right-pointing"
-
-The combined data in Lua format looks like:
-
+Charset data in Lua format:
   {
     code_point = "U+2192",
     character = "→",
@@ -178,16 +198,22 @@ The combined data in Lua format looks like:
     },
   }
 
+Ligature data in CSV format:
+  sequence,glyph,description
+  ->,→,Right Arrow
+  =>,⇒,Right Double Arrow
+  !=,≠,Not Equal To
+
 CACHE MANAGEMENT
 --------------
 
 The package provides several options for managing cached files:
 
-1. Default cache location: ~/.cache/glyph-catcher
+1. Default cache location: ~/.cache/uniff-gen
    - Persistent across sessions
    - Used when --use-cache is specified
 
-2. Temporary cache location: /tmp/glyph-catcher-cache
+2. Temporary cache location: /tmp/uniff-gen-cache
    - Cleared on system reboot
    - Used when --use-temp-cache is specified
 
@@ -196,7 +222,7 @@ The package provides several options for managing cached files:
    - Used when both --use-cache and --cache-dir are specified
 
 To clean the cache:
-  glyph-catcher clean-cache
+  uniff-charset clean-cache
 
 ERROR HANDLING
 ------------
@@ -221,7 +247,7 @@ The package includes robust error handling:
 EXTENDING THE DATASET
 -------------------
 
-The dataset can be extended with additional sources:
+The charset dataset can be extended with additional sources:
 
 1. Additional CLDR languages:
    - Download language-specific annotation files (e.g., fr.xml for French)
@@ -234,8 +260,7 @@ The dataset can be extended with additional sources:
    - Programming language escape sequences
    - Emoji database descriptions for emoji characters
 
-To add a new source, implement a parser function similar to the existing ones
-and merge the results into the aliases_info dictionary.
+The ligature dataset can be extended with additional mappings from various programming fonts and editor configurations.
 
 DEVELOPMENT
 ----------

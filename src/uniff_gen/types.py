@@ -1,5 +1,5 @@
 """
-Type definitions and dataclasses for the glyph-catcher package.
+Type definitions and dataclasses for the uniff-gen package.
 """
 
 from dataclasses import dataclass
