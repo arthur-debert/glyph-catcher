@@ -6,6 +6,8 @@ This module handles the core processing and generation of ligature data.
 
 import csv
 import os
+import shutil
+from pathlib import Path
 
 from uniff_core.progress import ProgressDisplay
 from uniff_core.types import ExportOptions
@@ -34,37 +36,90 @@ def process_ligature_data(
     # Track output files
     output_files = []
 
+    # Get path to data files (stored within the package)
+    package_dir = Path(__file__).parent
+    everyday_dataset = package_dir / "data" / "ligatures_everyday.csv"
+    complete_dataset = package_dir / "data" / "ligatures_complete.csv"
+
+    # Ensure the data directory exists
+    data_dir = package_dir / "data"
+    data_dir.mkdir(exist_ok=True)
+
     # Determine which formats to export
-    # For now, just handle CSV as a simple example
     if options.format_type in ["csv", "all"]:
         csv_task = progress.add_child_item(main_task, "Generating CSV output")
 
-        # Generate a dummy CSV file with some example ligatures
-        output_filename = os.path.join(options.output_dir, "ligatures.csv")
-
         try:
-            with open(output_filename, "w", newline="") as csvfile:
-                writer = csv.writer(csvfile)
+            # Determine which dataset to use
+            dataset_to_use = complete_dataset
+            if options.dataset == "everyday":
+                dataset_to_use = everyday_dataset
 
-                # Write header
-                writer.writerow(["sequence", "glyph", "description"])
+            # Create output filename
+            output_filename = os.path.join(options.output_dir, "ligatures.csv")
 
-                # Write some example ligatures
-                writer.writerow(["->", "→", "Right Arrow"])
-                writer.writerow(["=>", "⇒", "Right Double Arrow"])
-                writer.writerow(["!=", "≠", "Not Equal To"])
-                writer.writerow(["<=", "≤", "Less Than or Equal To"])
-                writer.writerow([">=", "≥", "Greater Than or Equal To"])
-                writer.writerow(["::", "∷", "Proportion"])
-                writer.writerow(["...", "…", "Ellipsis"])
-                writer.writerow(["--", "–", "En Dash"])
-                writer.writerow(["---", "—", "Em Dash"])
+            # If the dataset file exists, copy it to the output
+            if dataset_to_use.exists():
+                shutil.copy(dataset_to_use, output_filename)
+                output_files.append(output_filename)
+                csv_task.set_success(f"Created {output_filename}")
+            else:
+                # Generate a simple default CSV with common ligatures
+                with open(output_filename, "w", newline="", encoding="utf-8") as csvfile:
+                    writer = csv.writer(csvfile)
 
-            output_files.append(output_filename)
-            csv_task.set_success(f"Created {output_filename}")
+                    # Write header
+                    writer.writerow(["sequence", "glyph", "category", "description"])
+
+                    # Write some example ligatures
+                    writer.writerow(["->", "→", "arrows", "Right Arrow"])
+                    writer.writerow(["=>", "⇒", "arrows", "Right Double Arrow"])
+                    writer.writerow(["!=", "≠", "comparison", "Not Equal To"])
+                    writer.writerow(["<=", "≤", "comparison", "Less Than or Equal To"])
+                    writer.writerow([">=", "≥", "comparison", "Greater Than or Equal To"])
+                    writer.writerow(["::", "∷", "punctuation", "Proportion"])
+                    writer.writerow(["...", "…", "punctuation", "Ellipsis"])
+                    writer.writerow(["--", "–", "punctuation", "En Dash"])
+                    writer.writerow(["---", "—", "punctuation", "Em Dash"])
+
+                output_files.append(output_filename)
+                csv_task.set_success(f"Created {output_filename} (fallback data)")
         except Exception as e:
             csv_task.set_failure(f"Error: {str(e)}")
             return False, []
+
+    # Generate other formats if needed
+    if options.format_type in ["json", "all"]:
+        json_task = progress.add_child_item(main_task, "Generating JSON output")
+
+        try:
+            # First load the CSV data
+            dataset_to_use = complete_dataset
+            if options.dataset == "everyday":
+                dataset_to_use = everyday_dataset
+
+            # Create output filename
+            output_filename = os.path.join(options.output_dir, "ligatures.json")
+
+            # Convert CSV to JSON format
+            import json
+
+            if dataset_to_use.exists():
+                # Load the CSV data
+                with open(dataset_to_use, encoding="utf-8") as csvfile:
+                    reader = csv.DictReader(csvfile)
+                    data = list(reader)
+
+                # Convert to JSON
+                with open(output_filename, "w", encoding="utf-8") as jsonfile:
+                    json.dump(data, jsonfile, indent=2, ensure_ascii=False)
+
+                output_files.append(output_filename)
+                json_task.set_success(f"Created {output_filename}")
+            else:
+                json_task.set_failure("Source data file not found")
+        except Exception as e:
+            json_task.set_failure(f"Error: {str(e)}")
 
     # Mark main task as successful
     main_task.set_success()

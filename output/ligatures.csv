@@ -1,10 +1,261 @@
-sequence,glyph,description
-->,→,Right Arrow
-=>,⇒,Right Double Arrow
-!=,≠,Not Equal To
-<=,≤,Less Than or Equal To
->=,≥,Greater Than or Equal To
-::,∷,Proportion
-...,…,Ellipsis
---,–,En Dash
----,—,Em Dash
+sequence,glyph,category,description
+->,→,arrows,Right Arrow
+=>,⇒,arrows,Right Double Arrow
+<-,←,arrows,Left Arrow
+<=,⇐,arrows,Left Double Arrow
+<->,↔,arrows,Bidirectional Arrow
+<=>,⇔,arrows,Bidirectional Double Arrow
+-->,⟶,arrows,Long Right Arrow
+<--,⟵,arrows,Long Left Arrow
+->>,↠,arrows,Right Arrow with Tail
+<<-,↞,arrows,Left Arrow with Tail
+-->>|,⟾,arrows,Long Right Arrow From Bar
+|<<--,⟽,arrows,Long Left Arrow To Bar
+~>,↝,arrows,Wavy Right Arrow
+<~,↜,arrows,Wavy Left Arrow
+==>,⟹,arrows,Long Right Double Arrow
+<==,⟸,arrows,Long Left Double Arrow
+<==>,⟺,arrows,Long Left Right Double Arrow
+|->,⟼,arrows,Long Right Arrow From Bar
+^|,↑,arrows,Upwards Arrow
+v|,↓,arrows,Downwards Arrow
+^v,↕,arrows,Up Down Arrow
+^^,⇈,arrows,Upwards Paired Arrows
+vv,⇊,arrows,Downwards Paired Arrows
+<||,⇤,arrows,Left Arrow To Bar
+||>,⇥,arrows,Right Arrow From Bar
+<|,↤,arrows,Left Arrow From Bar
+|>,↦,arrows,Right Arrow From Bar
+<-|,↤,arrows,Left Arrow From Bar (alt)
+|->,↦,arrows,Right Arrow From Bar (alt)
+!=,≠,comparison,Not Equal To
+==,≡,comparison,Identical To
+<=,≤,comparison,Less Than or Equal To
+>=,≥,comparison,Greater Than or Equal To
+<>,≠,comparison,Not Equal To (alt)
+=/=,≠,comparison,Not Equal To (alt2)
+~=,≈,comparison,Almost Equal To
+~~,≈,comparison,Almost Equal To (alt)
+!~=,≉,comparison,Not Almost Equal To
+!~~,≉,comparison,Not Almost Equal To (alt)
+<<<,⋘,comparison,Very Much Less Than
+>>>,⋙,comparison,Very Much Greater Than
++-,±,math,Plus-Minus Sign
+-+,∓,math,Minus-Plus Sign
+**,×,math,Multiplication Sign
+***,⋆,math,Asterisk Operator
+//,÷,math,Division Sign
+sqrt,√,math,Square Root
+inf,∞,math,Infinity
+sum,∑,math,Summation
+prod,∏,math,Product
+integral,∫,math,Integral
+partial,∂,math,Partial Differential
+nabla,∇,math,Nabla
+grad,∇,math,Gradient
+sqrt(2),√2,math,Square Root of 2
+sqrt(3),√3,math,Square Root of 3
+cbrt,∛,math,Cube Root
+^2,²,math,Superscript Two
+^3,³,math,Superscript Three
+^n,ⁿ,math,Superscript Latin Small Letter N
+_0,₀,math,Subscript Zero
+_1,₁,math,Subscript One
+_2,₂,math,Subscript Two
+_3,₃,math,Subscript Three
+_4,₄,math,Subscript Four
+_5,₅,math,Subscript Five
+_6,₆,math,Subscript Six
+_7,₇,math,Subscript Seven
+_8,₈,math,Subscript Eight
+_9,₉,math,Subscript Nine
+1/2,½,math,Vulgar Fraction One Half
+1/3,⅓,math,Vulgar Fraction One Third
+2/3,⅔,math,Vulgar Fraction Two Thirds
+1/4,¼,math,Vulgar Fraction One Quarter
+3/4,¾,math,Vulgar Fraction Three Quarters
+1/8,⅛,math,Vulgar Fraction One Eighth
+3/8,⅜,math,Vulgar Fraction Three Eighths
+5/8,⅝,math,Vulgar Fraction Five Eighths
+7/8,⅞,math,Vulgar Fraction Seven Eighths
+alpha,α,greek,Greek Small Letter Alpha
+beta,β,greek,Greek Small Letter Beta
+gamma,γ,greek,Greek Small Letter Gamma
+delta,δ,greek,Greek Small Letter Delta
+epsilon,ε,greek,Greek Small Letter Epsilon
+zeta,ζ,greek,Greek Small Letter Zeta
+eta,η,greek,Greek Small Letter Eta
+theta,θ,greek,Greek Small Letter Theta
+iota,ι,greek,Greek Small Letter Iota
+kappa,κ,greek,Greek Small Letter Kappa
+lambda,λ,greek,Greek Small Letter Lambda
+mu,μ,greek,Greek Small Letter Mu
+nu,ν,greek,Greek Small Letter Nu
+xi,ξ,greek,Greek Small Letter Xi
+omicron,ο,greek,Greek Small Letter Omicron
+pi,π,greek,Greek Small Letter Pi
+rho,ρ,greek,Greek Small Letter Rho
+sigma,σ,greek,Greek Small Letter Sigma
+tau,τ,greek,Greek Small Letter Tau
+upsilon,υ,greek,Greek Small Letter Upsilon
+phi,φ,greek,Greek Small Letter Phi
+chi,χ,greek,Greek Small Letter Chi
+psi,ψ,greek,Greek Small Letter Psi
+omega,ω,greek,Greek Small Letter Omega
+Alpha,Α,greek,Greek Capital Letter Alpha
+Beta,Β,greek,Greek Capital Letter Beta
+Gamma,Γ,greek,Greek Capital Letter Gamma
+Delta,Δ,greek,Greek Capital Letter Delta
+Epsilon,Ε,greek,Greek Capital Letter Epsilon
+Zeta,Ζ,greek,Greek Capital Letter Zeta
+Eta,Η,greek,Greek Capital Letter Eta
+Theta,Θ,greek,Greek Capital Letter Theta
+Iota,Ι,greek,Greek Capital Letter Iota
+Kappa,Κ,greek,Greek Capital Letter Kappa
+Lambda,Λ,greek,Greek Capital Letter Lambda
+Mu,Μ,greek,Greek Capital Letter Mu
+Nu,Ν,greek,Greek Capital Letter Nu
+Xi,Ξ,greek,Greek Capital Letter Xi
+Omicron,Ο,greek,Greek Capital Letter Omicron
+Pi,Π,greek,Greek Capital Letter Pi
+Rho,Ρ,greek,Greek Capital Letter Rho
+Sigma,Σ,greek,Greek Capital Letter Sigma
+Tau,Τ,greek,Greek Capital Letter Tau
+Upsilon,Υ,greek,Greek Capital Letter Upsilon
+Phi,Φ,greek,Greek Capital Letter Phi
+Chi,Χ,greek,Greek Capital Letter Chi
+Psi,Ψ,greek,Greek Capital Letter Psi
+Omega,Ω,greek,Greek Capital Letter Omega
+&&,∧,logic,Logical AND
+||,∨,logic,Logical OR
+!,¬,logic,Logical NOT
+"for all",∀,logic,Universal Quantifier
+exists,∃,logic,Existential Quantifier
+xor,⊕,logic,Exclusive OR
+\top,⊤,logic,Logical True
+\bottom,⊥,logic,Logical False
+|-,⊢,logic,Right Tack
+-|,⊣,logic,Left Tack
+|=,⊨,logic,True
+=|,⫤,logic,Reverse True
+||-,⊩,logic,Forces
+models,⊨,logic,Models
+therefore,∴,logic,Therefore
+because,∵,logic,Because
+in,∈,sets,Element Of
+"not in",∉,sets,Not an Element Of
+ni,∋,sets,Contains as Member
+"not ni",∌,sets,Does Not Contain as Member
+union,∪,sets,Union
+intersection,∩,sets,Intersection
+subset,⊂,sets,Subset Of
+superset,⊃,sets,Superset Of
+subset=,⊆,sets,Subset Of or Equal To
+superset=,⊇,sets,Superset Of or Equal To
+"not subset",⊄,sets,Not a Subset Of
+"not superset",⊅,sets,Not a Superset Of
+emptyset,∅,sets,Empty Set
+powerset,℘,sets,Script Capital P
+bigcup,⋃,sets,N-ary Union
+bigcap,⋂,sets,N-ary Intersection
+N,ℕ,sets,Double-Struck Capital N (Natural Numbers)
+Z,ℤ,sets,Double-Struck Capital Z (Integers)
+Q,ℚ,sets,Double-Struck Capital Q (Rational Numbers)
+R,ℝ,sets,Double-Struck Capital R (Real Numbers)
+C,ℂ,sets,Double-Struck Capital C (Complex Numbers)
+...,…,punctuation,Ellipsis
+--,–,punctuation,En Dash
+---,—,punctuation,Em Dash
+::,∷,punctuation,Proportion
+<<,«,punctuation,Left-Pointing Double Angle Quotation Mark
+>>,»,punctuation,Right-Pointing Double Angle Quotation Mark
+",",punctuation,Quotation Mark
+',',punctuation,Apostrophe
+",,",„,punctuation,Double Low-9 Quotation Mark
+"``","",punctuation,Left Double Quotation Mark
+"''","",punctuation,Right Double Quotation Mark
+"!?",‽,punctuation,Interrobang
+"?!",⁉,punctuation,Exclamation Question Mark
+EUR,€,currency,Euro Sign
+GBP,£,currency,Pound Sign
+JPY,¥,currency,Yen Sign
+USD,$,currency,Dollar Sign
+cent,¢,currency,Cent Sign
+BTC,₿,currency,Bitcoin Sign
+CNY,¥,currency,Yuan Sign
+INR,₹,currency,Indian Rupee Sign
+KRW,₩,currency,Won Sign
+TRY,₺,currency,Turkish Lira Sign
+RUB,₽,currency,Ruble Sign
+copyright,©,common_symbols,Copyright Sign
+registered,®,common_symbols,Registered Sign
+trademark,™,common_symbols,Trademark Sign
+degree,°,common_symbols,Degree Sign
+micro,µ,common_symbols,Micro Sign
+bullet,•,common_symbols,Bullet
+paragraph,¶,common_symbols,Pilcrow Sign
+section,§,common_symbols,Section Sign
+check,✓,common_symbols,Check Mark
+cross,✗,common_symbols,Ballot X
+star,★,common_symbols,Black Star
+snowflake,❄,common_symbols,Snowflake
+sun,☀,common_symbols,Black Sun with Rays
+cloud,☁,common_symbols,Cloud
+umbrella,☂,common_symbols,Umbrella
+warning,⚠,common_symbols,Warning Sign
+recycle,♻,common_symbols,Recycling Symbol
+telephone,☎,common_symbols,Black Telephone
+envelope,✉,common_symbols,Envelope
+pencil,✎,common_symbols,Lower Right Pencil
+scissors,✂,common_symbols,Black Scissors
+heart,♥,common_symbols,Black Heart Suit
+spade,♠,common_symbols,Black Spade Suit
+club,♣,common_symbols,Black Club Suit
+diamond,♦,common_symbols,Black Diamond Suit
+music,♫,common_symbols,Beamed Eighth Notes
+smile,☺,common_symbols,White Smiling Face
+frown,☹,common_symbols,White Frowning Face
+function,λ,programming,Function (Lambda)
+lambda,λ,programming,Lambda
+"===",≣,programming,Strictly Equivalent To
+"!==",≢,programming,Not Strictly Equivalent To
+"++",⧺,programming,Plus Plus (List Concatenation)
+":=",≔,programming,Assignment
+"=:",≕,programming,Reverse Assignment
+"|>",▷,programming,Pipeline Operator
+"<|",◁,programming,Reverse Pipeline Operator
+">>",≫,programming,Much Greater Than
+"<<",≪,programming,Much Less Than
+":::",∷,programming,Triple Colon
+">>|",⊳,programming,Contains As Normal Subgroup
+"|<<",⊲,programming,Normal Subgroup Of
+"//",⁄,technical,Fraction Slash
+"///",⫻,technical,Triple Solidus Binary Relation
+"#",♯,technical,Music Sharp Sign
+"@",﹫,technical,Small At Symbol
+"[",⟦,technical,Mathematical Left White Square Bracket
+"]",⟧,technical,Mathematical Right White Square Bracket
+"(",⦅,technical,Left White Parenthesis
+")",⦆,technical,Right White Parenthesis
+"<",⟨,technical,Mathematical Left Angle Bracket
+">",⟩,technical,Mathematical Right Angle Bracket
+"{{",⦃,technical,Left White Curly Bracket
+"}}",⦄,technical,Right White Curly Bracket
+"<+",⊕,technical,Circled Plus
+"+>",⊕,technical,Circled Plus (alt)
+"<*",⊗,technical,Circled Times
+"*>",⊗,technical,Circled Times (alt)
+"<|>",⧫,technical,Black Diamond
+"1/",⅟,technical,Fraction Numerator One
+www,🌐,technical,Globe with Meridians
+mail,📧,technical,E-Mail Symbol
+cmd,⌘,technical,Command Key
+opt,⌥,technical,Option Key
+shift,⇧,technical,Upwards White Arrow
+ctrl,⌃,technical,Up Arrowhead
+esc,⎋,technical,Escape Key
+tab,⇥,technical,Right Tab
+enter,⏎,technical,Return Symbol
+delete,⌫,technical,Erase to the Left
+backspace,⌫,technical,Erase to the Left (alt)
+spacebar,␣,technical,Space Symbol

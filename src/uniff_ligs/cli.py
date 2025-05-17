@@ -39,7 +39,13 @@ def cli():
     default=False,
     help="Compress output files using gzip for maximum compression",
 )
-def generate(format, output_dir, compress):
+@click.option(
+    "--dataset",
+    type=click.Choice(["everyday", "complete"]),
+    default="complete",
+    help="Dataset size to use (default: complete)",
+)
+def generate(format, output_dir, compress, dataset):
     """
     Generate ligature dataset in the specified format.
 
@@ -51,6 +57,7 @@ def generate(format, output_dir, compress):
         format_type=format,
         output_dir=output_dir,
         compress=compress,
+        dataset=dataset,
     )
 
     # Import here to avoid circular imports
@@ -91,3 +98,7 @@ def info():
     click.echo("  != can be rendered as ≠")
     click.echo("")
     click.echo("These are particularly useful in programming fonts and code editors.")
+    click.echo("")
+    click.echo("Dataset Options:")
+    click.echo("  - everyday: A smaller set of the most common ligatures (~70 mappings)")
+    click.echo("  - complete: A comprehensive set of ligatures (~260 mappings)")

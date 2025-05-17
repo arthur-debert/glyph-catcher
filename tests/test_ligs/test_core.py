@@ -36,7 +36,7 @@ def test_process_ligature_data():
             rows = list(reader)
 
             # Check header
-            assert rows[0] == ["sequence", "glyph", "description"]
+            assert rows[0] == ["sequence", "glyph", "category", "description"]
 
             # Check that there are some rows
             assert len(rows) > 1
@@ -50,4 +50,5 @@ def test_process_ligature_data():
 
             assert arrow_row is not None
             assert arrow_row[1] == "→"
-            assert "Arrow" in arrow_row[2]
+            assert arrow_row[2] == "arrows"  # Check the category
+            assert "Arrow" in arrow_row[3]  # Description is now at index 3
