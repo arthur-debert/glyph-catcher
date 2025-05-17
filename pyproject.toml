@@ -43,7 +43,8 @@ dev = [
 
 
 [project.scripts]
-uniff-gen = "uniff_gen.__main__:main"
+uniff-charset = "uniff_charset.__main__:main"
+uniff-ligs = "uniff_ligs.__main__:main"
 
 [project.urls]
 Homepage = "https://github.com/arthur-debert/univim/"
@@ -54,7 +55,11 @@ requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
-packages = [{ include = "uniff_gen", from = "src" }]
+packages = [
+    { include = "uniff_core", from = "src" },
+    { include = "uniff_charset", from = "src" },
+    { include = "uniff_ligs", from = "src" },
+]
 include = ["bin/**/*", "README.txt", "LICENSE"]
 exclude = ["**/*.lua", "**/*.csv", "**/*.txt"]
 
