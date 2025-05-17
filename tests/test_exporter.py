@@ -3,7 +3,7 @@ Tests for the exporter module.
 """
 
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock, mock_open, patch
 
 from uniff_gen.exporter import (
     export_data,
@@ -43,12 +43,14 @@ class TestExporter(unittest.TestCase):
     # The individual exporter tests have been moved to test_exporters.py
 
     @patch("uniff_gen.exporters.registry.get_exporter")
-    def test_export_data_csv(self, mock_get_exporter):
+    @patch("builtins.open", new_callable=mock_open)
+    def test_export_data_csv(self, mock_file, mock_get_exporter):
         """Test exporting data to CSV format."""
         # Create a mock exporter
         mock_exporter = MagicMock(spec=BaseExporter)
-        mock_exporter.write.return_value = True
         mock_exporter.verify.return_value = (True, None)
+        mock_exporter.format_type = "csv"
+        mock_exporter.extension = ".csv"
 
         # Set up the mock to return our mock exporter
         mock_get_exporter.return_value = mock_exporter
@@ -62,22 +64,24 @@ class TestExporter(unittest.TestCase):
 
         # Check that the exporter was used correctly
         mock_get_exporter.assert_called_once_with("csv")
-        mock_exporter.write.assert_called_once_with(
-            self.unicode_data, self.aliases_data, "/tmp/unicode.every-day.csv"
-        )
+        mock_file.assert_called()
         mock_exporter.verify.assert_called_once_with("/tmp/unicode.every-day.csv")
 
     @patch("uniff_gen.exporters.registry.get_supported_formats")
     @patch("uniff_gen.exporters.registry.get_exporter")
-    def test_export_data_all(self, mock_get_exporter, mock_get_supported_formats):
+    @patch("builtins.open", new_callable=mock_open)
+    def test_export_data_all(
+        self, mock_file, mock_get_exporter, mock_get_supported_formats
+    ):
         """Test exporting data to all formats."""
         # Set up the mock to return a list of supported formats
         mock_get_supported_formats.return_value = ["csv", "json", "lua", "txt"]
 
         # Create a mock exporter
         mock_exporter = MagicMock(spec=BaseExporter)
-        mock_exporter.write.return_value = True
         mock_exporter.verify.return_value = (True, None)
+        mock_exporter.format_type = "csv"  # Doesn't matter which format we use
+        mock_exporter.extension = ".csv"
 
         # Set up the mock to return our mock exporter for any format
         mock_get_exporter.return_value = mock_exporter
@@ -99,15 +103,18 @@ class TestExporter(unittest.TestCase):
 
         # Check that the exporter was used correctly for each format
         self.assertEqual(mock_get_exporter.call_count, 4)
-        self.assertEqual(mock_exporter.write.call_count, 4)
+        # Make sure open was called at least 4 times (once per format)
+        self.assertGreaterEqual(mock_file.call_count, 4)
         self.assertEqual(mock_exporter.verify.call_count, 4)
 
     @patch("uniff_gen.exporters.registry.get_exporter")
-    def test_export_data_write_failure(self, mock_get_exporter):
+    @patch("builtins.open", side_effect=OSError("Failed to open file"))
+    def test_export_data_write_failure(self, mock_file, mock_get_exporter):
         """Test exporting data when writing fails."""
-        # Create a mock exporter that fails to write
+        # Create a mock exporter
         mock_exporter = MagicMock(spec=BaseExporter)
-        mock_exporter.write.return_value = False
+        mock_exporter.format_type = "csv"
+        mock_exporter.extension = ".csv"
 
         # Set up the mock to return our mock exporter
         mock_get_exporter.return_value = mock_exporter
@@ -116,23 +123,23 @@ class TestExporter(unittest.TestCase):
         options = ExportOptions(format_type="csv", output_dir="/tmp", dataset="every-day")
         result = export_data(self.unicode_data, self.aliases_data, options)
 
-        # The function should not add the file to the output list if writing fails
+        # The function should return an empty list if opening the file fails
         self.assertEqual(result, [])
 
         # Check that the exporter was used correctly
         mock_get_exporter.assert_called_once_with("csv")
-        mock_exporter.write.assert_called_once_with(
-            self.unicode_data, self.aliases_data, "/tmp/unicode.every-day.csv"
-        )
+        # Verify shouldn't be called if we can't open the file
         mock_exporter.verify.assert_not_called()
 
     @patch("uniff_gen.exporters.registry.get_exporter")
-    def test_export_data_with_validation(self, mock_get_exporter):
+    @patch("builtins.open", new_callable=mock_open)
+    def test_export_data_with_validation(self, mock_file, mock_get_exporter):
         """Test exporting data with validation."""
         # Create a mock exporter
         mock_exporter = MagicMock(spec=BaseExporter)
-        mock_exporter.write.return_value = True
         mock_exporter.verify.return_value = (True, None)
+        mock_exporter.format_type = "csv"
+        mock_exporter.extension = ".csv"
 
         # Set up the mock to return our mock exporter
         mock_get_exporter.return_value = mock_exporter
@@ -148,12 +155,14 @@ class TestExporter(unittest.TestCase):
         mock_exporter.verify.assert_called_once_with("/tmp/unicode.every-day.csv")
 
     @patch("uniff_gen.exporters.registry.get_exporter")
-    def test_export_data_with_validation_failure(self, mock_get_exporter):
+    @patch("builtins.open", new_callable=mock_open)
+    def test_export_data_with_validation_failure(self, mock_file, mock_get_exporter):
         """Test exporting data with validation failure."""
         # Create a mock exporter
         mock_exporter = MagicMock(spec=BaseExporter)
-        mock_exporter.write.return_value = True
         mock_exporter.verify.return_value = (False, "Validation error")
+        mock_exporter.format_type = "csv"
+        mock_exporter.extension = ".csv"
 
         # Set up the mock to return our mock exporter
         mock_get_exporter.return_value = mock_exporter
