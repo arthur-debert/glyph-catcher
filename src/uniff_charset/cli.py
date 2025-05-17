@@ -64,6 +64,12 @@ def cli():
     help=f"Use temporary cache directory ({TMP_CACHE_DIR})",
 )
 @click.option(
+    "--force",
+    is_flag=True,
+    default=False,
+    help="Force regeneration of master data file even if cached version exists",
+)
+@click.option(
     "--unicode-blocks",
     multiple=True,
     help="Unicode block(s) to include (can be specified multiple times). "
@@ -111,6 +117,7 @@ def generate(
     use_cache,
     cache_dir,
     use_temp_cache,
+    force,
     unicode_blocks,
     exit_on_error,
     data_dir,
@@ -146,6 +153,7 @@ def generate(
         cache_dir=cache_dir,
         use_temp_cache=use_temp_cache,
         data_dir=data_dir,
+        force=force,
     )
 
     # Convert unicode_blocks tuple to list if specified
@@ -418,6 +426,7 @@ def get_generate_options(
     use_cache=False,
     cache_dir=DEFAULT_CACHE_DIR,
     use_temp_cache=False,
+    force=False,
     unicode_blocks=None,
     exit_on_error=False,
     data_dir=None,
@@ -438,6 +447,8 @@ def get_generate_options(
         use_cache: Whether to use cached files if available
         cache_dir: Directory to store cached files
         use_temp_cache: Whether to use temporary cache directory
+        force: Whether to force regeneration of master data file even if cached
+        version exists
         unicode_blocks: List of Unicode block names to include
         exit_on_error: Whether to exit with code 1 on error
         data_dir: Directory to store the master data file
@@ -455,6 +466,7 @@ def get_generate_options(
         cache_dir=cache_dir,
         use_temp_cache=use_temp_cache,
         data_dir=data_dir,
+        force=force,
     )
 
     # Convert unicode_blocks to list if specified

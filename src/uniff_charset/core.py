@@ -14,7 +14,13 @@ from uniff_core.types import FetchOptions
 from .config import DEFAULT_CACHE_DIR, DEFAULT_DATA_DIR
 from .exporter import export_data, save_source_files
 from .fetcher import fetch_all_data_files
-from .processor import process_data_files, save_master_data_file
+from .processor import (
+    calculate_source_files_checksum,
+    find_master_file_by_checksum,
+    load_master_data_file,
+    process_data_files,
+    save_master_data_file,
+)
 from .types import ExportOptions
 
 # Progress message constants
@@ -139,40 +145,98 @@ def process_unicode_data(
         return False, []
     # Process the data files
     try:
-        unicode_data, aliases_data = process_data_files(file_paths)
-        if not unicode_data or not aliases_data:
-            if not in_test:
-                normalize_progress.set_failure()
-                master_data_progress.set_failure(PROGRESS_PROCESS_FAILED)
-                processing_progress.set_failure()
-            return False, []
-
-        if not in_test:
-            normalize_progress.set_success()
-
-        # Save the processed data to the master file
         data_dir = fetch_options.data_dir or DEFAULT_DATA_DIR
 
-        # Special case for tests
-        if in_test:
-            master_file_path = "/tmp/master_data.json"  # Mock path for tests
+        # Check if we need to use cached master data
+        if not fetch_options.force:
+            # Calculate source files checksum
+            checksum = calculate_source_files_checksum(file_paths)
+
+            # Look for an existing master file with this checksum
+            cached_master_file = find_master_file_by_checksum(data_dir, checksum)
+
+            if cached_master_file and os.path.exists(cached_master_file):
+                # Use the cached master file
+                if not in_test:
+                    normalize_progress.set_success("Using cached master data")
+                    master_data_progress.set_success("Loading from cache")
+
+                # Load the cached master data
+                unicode_data, aliases_data = load_master_data_file(cached_master_file)
+
+                if unicode_data and aliases_data:
+                    if not in_test:
+                        # Display character count
+                        char_count = len(unicode_data)
+                        master_data_progress.set_success(
+                            PROGRESS_CHAR_COUNT.format(char_count)
+                        )
+                        processing_progress.set_success()
+
+                    # Set the master file path in the export options
+                    export_options.master_file_path = cached_master_file
+
+                    # Skip to the export phase
+                    print(f"Using cached master data: {cached_master_file}")
+
+                    if not in_test:
+                        normalize_progress.set_success()
+                        processing_progress.set_success()
+
+                    # Continue to export
+                    skip_to_export = True
+                else:
+                    # If loading failed, process the data normally
+                    skip_to_export = False
+            else:
+                # No cached data found, process normally
+                skip_to_export = False
         else:
-            master_file_path = save_master_data_file(unicode_data, aliases_data, data_dir)
+            # Force regeneration, so don't use cache
+            skip_to_export = False
 
-        if not master_file_path and not in_test:
-            master_data_progress.set_failure(PROGRESS_SAVE_MASTER_FAILED)
-            processing_progress.set_failure()
-            return False, []
+        # If we're not skipping to export, process the data normally
+        if "skip_to_export" not in locals() or not skip_to_export:
+            unicode_data, aliases_data = process_data_files(file_paths)
+            if not unicode_data or not aliases_data:
+                if not in_test:
+                    normalize_progress.set_failure()
+                    master_data_progress.set_failure(PROGRESS_PROCESS_FAILED)
+                    processing_progress.set_failure()
+                return False, []
 
-        # Display character count as part of master data generation
-        if not in_test:
-            char_count = len(unicode_data)
-            master_data_progress.set_success(PROGRESS_CHAR_COUNT.format(char_count))
-            processing_progress.set_success()
+            if not in_test:
+                normalize_progress.set_success()
 
-        # Set the master file path in the export options
-        if master_file_path:
-            export_options.master_file_path = master_file_path
+            # Save the processed data to the master file
+            # Special case for tests
+            if in_test:
+                master_file_path = "/tmp/master_data.json"  # Mock path for tests
+            else:
+                # Calculate checksum for the filename
+                checksum = calculate_source_files_checksum(file_paths)
+                master_file_path = save_master_data_file(
+                    unicode_data,
+                    aliases_data,
+                    data_dir,
+                    file_paths=None,
+                    checksum=checksum,
+                )
+
+            if not master_file_path and not in_test:
+                master_data_progress.set_failure(PROGRESS_SAVE_MASTER_FAILED)
+                processing_progress.set_failure()
+                return False, []
+
+            # Display character count as part of master data generation
+            if not in_test:
+                char_count = len(unicode_data)
+                master_data_progress.set_success(PROGRESS_CHAR_COUNT.format(char_count))
+                processing_progress.set_success()
+
+            # Set the master file path in the export options
+            if master_file_path:
+                export_options.master_file_path = master_file_path
     except Exception as e:
         if not in_test:
             normalize_progress.set_failure(f"Error: {str(e)}")

@@ -17,6 +17,7 @@ class FetchOptions:
     cache_dir: Optional[str] = None
     use_temp_cache: bool = False  # If True, use temporary cache location
     data_dir: Optional[str] = None  # Directory to store the master data file
+    force: bool = False  # If True, force regeneration of data files
 
     def __post_init__(self):
         """Log fetch options after initialization."""

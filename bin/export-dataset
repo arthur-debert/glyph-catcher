@@ -12,6 +12,7 @@ mkdir -p "$OUTPUT_DIR"
 DATASET="every-day"
 FORMAT="lua"
 COMPRESS=true
+FORCE=false
 DEBUG=false
 
 # Process arguments
@@ -27,6 +28,10 @@ while [[ $# -gt 0 ]]; do
     ;;
   --no-compress)
     COMPRESS=false
+    shift
+    ;;
+  --force)
+    FORCE=true
     shift
     ;;
   --output-dir)
@@ -63,6 +68,11 @@ fi
 # Add compression flag if needed
 if [ "$COMPRESS" = true ]; then
   CMD="$CMD --compress"
+fi
+
+# Add force flag if needed
+if [ "$FORCE" = true ]; then
+  CMD="$CMD --force"
 fi
 
 # Execute the command
