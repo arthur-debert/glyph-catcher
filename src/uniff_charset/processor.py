@@ -15,6 +15,7 @@ from .config import (
     ALIAS_SOURCE_FORMAL,
     ALIAS_SOURCE_INFORMATIVE,
     DATASET_COMPLETE,
+    DATASET_TEST,
     get_alias_sources,
     get_dataset_blocks,
     get_unicode_blocks,
@@ -331,11 +332,33 @@ def filter_by_dataset(
     Args:
         unicode_data: Dictionary mapping code points to character information
         aliases_data: Dictionary mapping code points to lists of aliases
-        dataset: Dataset name (e.g., 'every-day', 'complete')
+        dataset: Dataset name (e.g., 'every-day', 'complete', 'test')
 
     Returns:
         Tuple of filtered (unicode_data, aliases_data)
     """
+    # Special case for the test dataset - just take a small subset
+    if dataset == DATASET_TEST:
+        # Create a smaller dataset for testing - first 50 characters from Basic Latin
+        test_unicode_data = {}
+        test_aliases_data = {}
+
+        # Sort code points for deterministic results
+        code_points = sorted(unicode_data.keys())
+        count = 0
+
+        for code_point in code_points:
+            char_info = unicode_data[code_point]
+            if "block" in char_info and char_info["block"] == "Basic Latin":
+                test_unicode_data[code_point] = char_info
+                if code_point in aliases_data:
+                    test_aliases_data[code_point] = aliases_data[code_point]
+                count += 1
+                if count >= 50:  # Only take the first 50 characters
+                    break
+
+        return test_unicode_data, test_aliases_data
+
     # Get the list of blocks for the dataset
     blocks = get_dataset_blocks(dataset)
 
@@ -395,10 +418,15 @@ def save_master_data_file(
     If file_paths or checksum is provided, the filename will include a checksum
     to enable caching and reuse of processed data.
 
+    If file_paths or checksum is provided, the filename will include a checksum
+    to enable caching and reuse of processed data.
+
     Args:
         unicode_data: Dictionary mapping code points to character information
         aliases_data: Dictionary mapping code points to lists of aliases
         data_dir: Directory to save the master data file
+        file_paths: Dictionary mapping file types to file paths (optional)
+        checksum: Pre-calculated checksum string (optional)
         file_paths: Dictionary mapping file types to file paths (optional)
         checksum: Pre-calculated checksum string (optional)
 
@@ -424,6 +452,20 @@ def save_master_data_file(
                 "char_obj": char_info["char_obj"],
                 "block": char_info.get("block", "Unknown Block"),
             }
+
+        # Determine the master file path based on checksum if available
+        if checksum or file_paths:
+            # Get a file path that includes the checksum
+            master_file_path = get_master_file_path(
+                fetch_options=type("FetchOptions", (), {"data_dir": data_dir})(),
+                file_paths=file_paths,
+                checksum=checksum,
+            )
+        else:
+            # Use the default master file path
+            from .config import MASTER_DATA_FILE
+
+            master_file_path = os.path.join(data_dir, MASTER_DATA_FILE)
 
         # Determine the master file path based on checksum if available
         if checksum or file_paths:
@@ -536,7 +578,19 @@ def get_master_file_path(
     else:
         master_filename = MASTER_DATA_FILE
 
+    return os.path.join(data_dir, master_filename)
+
+    # Create a filename with the checksum if we have file paths or a checksum
+    if checksum:
+        master_filename = f"unicode_master_data_{checksum}.json"
+    elif file_paths:
+        calculated_checksum = calculate_source_files_checksum(file_paths)
+        master_filename = f"unicode_master_data_{calculated_checksum}.json"
+    else:
+        master_filename = MASTER_DATA_FILE
+
     # Return the path to the master data file
+    return os.path.join(data_dir, master_filename)
     return os.path.join(data_dir, master_filename)
 
 

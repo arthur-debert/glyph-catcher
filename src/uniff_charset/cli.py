@@ -70,6 +70,12 @@ def cli():
     help="Force regeneration of master data file even if cached version exists",
 )
 @click.option(
+    "--force",
+    is_flag=True,
+    default=False,
+    help="Force regeneration of master data file even if cached version exists",
+)
+@click.option(
     "--unicode-blocks",
     multiple=True,
     help="Unicode block(s) to include (can be specified multiple times). "
