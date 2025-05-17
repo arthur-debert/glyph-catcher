@@ -1,0 +1,27 @@
+Charset generation Wokflow
+
+When generating charsets, the overall flow is :
+
+
+1. Fetching data:
+    We get the UnicodeData.txt, NamesList.txt, Blocks.txt either from local cache (if it exists and no --force flag is passed) or download fresh ones from unicode.org
+
+2. Processing:
+    We process this data, in particular generate aliases (akas) for each characterset from several sources. If no --force flag has been passed, we check if we have a suitable master data cached.
+    Since the master data is the product of serveral files, heres what we do:
+        - for each source file we calcuate the md5 checksum.
+        - we concatenate the checksums for each file, and checksum that.
+    We then check if we have a master data file for that specifiic checksum on disk, and ,  unless --force , if there is one, we use that. Else we process a new one.
+
+3. Exporting:
+    Since exporting several formats at once, the exporting does , for each target format:
+        - generate a header (for a csv, that's a real headr, for json can be the opening bracket)
+        - loops through the master data file:
+            - for each format, export that line for that format
+        - generate the export footer (i.e. closing json bracket in json) if there is one
+
+    The key thing is that we:
+        * iterate through a generator on the master set as so not to load it at once
+        * write each format line by line, thus not keeping the full formats in memory
+
+4. Compress each exported file
