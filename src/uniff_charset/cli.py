@@ -6,6 +6,7 @@ command definitions, and usage information.
 """
 
 import click
+from uniff_core.logging import setup_logging
 from uniff_core.types import FetchOptions
 
 from .config import (
@@ -98,6 +99,12 @@ def cli():
     default=False,
     help="Compress output files using gzip for maximum compression",
 )
+@click.option(
+    "--debug",
+    is_flag=True,
+    default=False,
+    help="Enable debug logging to /tmp/unifill.log",
+)
 def generate(
     format,
     output_dir,
@@ -110,6 +117,7 @@ def generate(
     no_master_file,
     dataset,
     compress,
+    debug,
 ):
     """
     Generate Unicode character dataset in the specified format.
@@ -157,6 +165,9 @@ def generate(
 
     # Import here to avoid circular imports
     from .core import process_unicode_data
+
+    # Setup logging
+    setup_logging(debug)
 
     # Process the data with progress display
     success, output_files = process_unicode_data(
@@ -413,6 +424,7 @@ def get_generate_options(
     no_master_file=False,
     dataset=DATASET_EVERYDAY,
     compress=False,
+    debug=False,
 ):
     """
     Create and return options for the generate command.
@@ -432,6 +444,7 @@ def get_generate_options(
         no_master_file: Whether to use the master data file for exporting
         dataset: Dataset to use (every-day or complete)
         compress: Whether to compress output files
+        debug: Whether to enable debug logging
 
     Returns:
         Tuple of (fetch_options, export_options, exit_on_error)
@@ -457,6 +470,7 @@ def get_generate_options(
         ),
         dataset=dataset,
         compress=compress,
+        debug=debug,
     )
 
     return fetch_options, export_options, exit_on_error

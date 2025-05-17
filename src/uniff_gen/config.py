@@ -83,6 +83,7 @@ def load_config() -> dict:
     default_config = {
         "datasets": {DATASET_EVERYDAY: [], DATASET_COMPLETE: ["all"]},
         "alias-sources": [ALIAS_SOURCE_CLDR],
+        "debug": False,
     }
 
     if not YAML_AVAILABLE:
@@ -193,3 +194,14 @@ def get_unicode_blocks() -> dict[range, str]:
             unicode_blocks[range(start, end)] = block_name
 
     return unicode_blocks
+
+
+def get_debug_mode() -> bool:
+    """
+    Get the debug mode setting from config.yaml.
+
+    Returns:
+        bool: True if debug mode is enabled, False otherwise
+    """
+    config = load_config()
+    return config.get("debug", False)

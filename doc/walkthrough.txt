@@ -113,6 +113,7 @@ The codebase is structured into three main packages:
 a. uniff_core
    - Shared functionality used by both charset and ligature processors
    - Contains common types, progress reporting, and exporter base classes
+   - Logging system with debug mode support (writes to /tmp/unifill.log)
 
 b. uniff_charset (previously uniff_gen)
    - Entry Point: The command-line interface is initialized through the main() function

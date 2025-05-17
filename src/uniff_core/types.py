@@ -26,3 +26,4 @@ class ExportOptions:
     master_file_path: Optional[str] = None  # Path to the master data file
     dataset: str = "complete"  # Dataset to use ("everyday" or "complete")
     compress: bool = False  # Whether to compress the output files
+    debug: bool = False  # Whether to enable debug logging
