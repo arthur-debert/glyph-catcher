@@ -5,6 +5,8 @@ This module handles all CLI-related functionality including argument parsing,
 command definitions, and usage information.
 """
 
+import logging
+
 import click
 from uniff_core.logging import setup_logging
 from uniff_core.types import FetchOptions
@@ -62,12 +64,6 @@ def cli():
     is_flag=True,
     default=False,
     help=f"Use temporary cache directory ({TMP_CACHE_DIR})",
-)
-@click.option(
-    "--force",
-    is_flag=True,
-    default=False,
-    help="Force regeneration of master data file even if cached version exists",
 )
 @click.option(
     "--force",
@@ -153,6 +149,36 @@ def generate(
                                                 # (6618 characters)
     uniff-charset generate --dataset complete   # Includes all Unicode blocks
     """
+    # Set up logging if debug mode is enabled
+    if debug:
+        log_file = "/tmp/uniff.log"
+
+        # Create a file handler only, no stdout/stderr handlers
+        file_handler = logging.FileHandler(log_file, mode="a")
+        file_handler.setLevel(logging.DEBUG)
+        file_handler.setFormatter(
+            logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        )
+
+        # Get the root logger and configure it
+        root_logger = logging.getLogger()
+        root_logger.setLevel(logging.DEBUG)
+
+        # Remove any existing handlers to avoid duplicates
+        for handler in root_logger.handlers[:]:
+            root_logger.removeHandler(handler)
+
+        # Add only the file handler, no stdout handlers
+        root_logger.addHandler(file_handler)
+
+        # Log to the file only
+        logging.debug(f"Debug mode enabled, logging to {log_file}")
+    else:
+        # If not in debug mode, disable all logging
+        logging.basicConfig(level=logging.ERROR)
+        for handler in logging.root.handlers[:]:
+            handler.setLevel(logging.ERROR)
+
     # Create options objects
     fetch_options = FetchOptions(
         use_cache=use_cache,
@@ -185,7 +211,7 @@ def generate(
 
     # Process the data with progress display
     success, output_files = process_unicode_data(
-        fetch_options, export_options, verbose=True
+        fetch_options, export_options, verbose=True, debug=debug
     )
 
     # Final output
