@@ -8,7 +8,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     env:
-      PYTHON_ROOT: ${{ github.workspace }}/glyph-catcher
+      PYTHON_ROOT: ${{ github.workspace }}/uniff-gen
 
     steps:
       - uses: actions/checkout@v4

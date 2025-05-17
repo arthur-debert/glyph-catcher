@@ -1,5 +1,5 @@
 """
-Exporters module for glyph-catcher.
+Exporters module for uniff-gen.
 
 This module contains the exporter registry and base exporter class.
 """

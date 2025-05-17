@@ -1,0 +1,10 @@
+sequence,glyph,description
+->,→,Right Arrow
+=>,⇒,Right Double Arrow
+!=,≠,Not Equal To
+<=,≤,Less Than or Equal To
+>=,≥,Greater Than or Equal To
+::,∷,Proportion
+...,…,Ellipsis
+--,–,En Dash
+---,—,Em Dash

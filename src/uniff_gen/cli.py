@@ -1,5 +1,8 @@
 """
-Command-line interface for the glyph-catcher package.
+Command-line interface for the uniff-gen package.
+
+This module handles all CLI-related functionality including argument parsing,
+command definitions, and usage information.
 """
 
 import click
@@ -11,59 +14,15 @@ from .config import (
     DEFAULT_DATA_DIR,
     TMP_CACHE_DIR,
 )
-from .exporter import export_data, save_source_files
-from .fetcher import clean_cache, fetch_all_data_files
-from .processor import get_master_file_path, process_data_files, save_master_data_file
+from .fetcher import clean_cache
+from .processor import get_master_file_path
 from .types import ExportOptions, FetchOptions
-
-
-def process_unicode_data(
-    fetch_options: FetchOptions, export_options: ExportOptions
-) -> tuple[bool, list[str]]:
-    """
-    Process Unicode data and generate output files.
-
-    Args:
-        fetch_options: Options for fetching Unicode data files
-        export_options: Options for exporting Unicode data
-
-    Returns:
-        Tuple of (success, output_files) where success is a boolean indicating
-        if the operation was successful, and output_files is a list of files.
-    """
-    # Fetch the data files
-    file_paths = fetch_all_data_files(fetch_options)
-    if not file_paths:
-        print("Failed to fetch data files")
-        return False, []
-
-    # Process the data files
-    unicode_data, aliases_data = process_data_files(file_paths)
-    if not unicode_data or not aliases_data:
-        print("Failed to process data files")
-        return False, []
-
-    # Save the processed data to the master file
-    data_dir = fetch_options.data_dir or DEFAULT_DATA_DIR
-    master_file_path = save_master_data_file(unicode_data, aliases_data, data_dir)
-
-    # Set the master file path in the export options
-    if master_file_path:
-        export_options.master_file_path = master_file_path
-
-    # Export the data
-    output_files = export_data(unicode_data, aliases_data, export_options)
-
-    # Save the source files
-    save_source_files(file_paths, export_options.output_dir)
-
-    return bool(output_files), output_files
 
 
 @click.group()
 def cli():
     """
-    Glyph-catcher: Download and process Unicode character data.
+    uniff-gen: Download and process Unicode character data.
 
     This tool downloads Unicode character data from various sources,
     processes it, and generates output in different formats for use
@@ -162,15 +121,15 @@ def generate(
     by using the --unicode-blocks option. For example:
 
     \b
-    glyph-catcher generate --unicode-blocks "Basic Latin" \\
+    uniff-gen generate --unicode-blocks "Basic Latin" \\
         --unicode-blocks "Greek"
 
     You can also select a predefined dataset using the --dataset option:
 
     \b
-    glyph-catcher generate --dataset every-day  # Default, common
+    uniff-gen generate --dataset every-day  # Default, common
                                                # (6618 characters)
-    glyph-catcher generate --dataset complete   # Includes all Unicode blocks
+    uniff-gen generate --dataset complete   # Includes all Unicode blocks
     """
     # Create options objects
     fetch_options = FetchOptions(
@@ -195,9 +154,15 @@ def generate(
         compress=compress,
     )
 
-    # Process the data
-    success, output_files = process_unicode_data(fetch_options, export_options)
+    # Import here to avoid circular imports
+    from .core import process_unicode_data
 
+    # Process the data with progress display
+    success, output_files = process_unicode_data(
+        fetch_options, export_options, verbose=True
+    )
+
+    # Final output
     if success:
         click.echo(
             click.style("✓ Unicode data processing completed successfully!", fg="green")
@@ -220,7 +185,7 @@ def info():
 
     Shows details about the available output formats and their uses.
     """
-    click.echo("Glyph-catcher: Unicode Data Format Information")
+    click.echo("uniff-gen: Unicode Data Format Information")
     click.echo("==============================================")
     click.echo("")
     click.echo("Available output formats:")
@@ -262,7 +227,7 @@ def info():
     click.echo("  - Emoticons")
     click.echo("")
     click.echo("Example:")
-    click.echo('  glyph-catcher generate --unicode-blocks "Basic Latin" \\')
+    click.echo('  uniff-gen generate --unicode-blocks "Basic Latin" \\')
     click.echo('  --unicode-blocks "Emoticons"')
 
 
@@ -419,15 +384,78 @@ def list_blocks():
         "Use these block names with the --unicode-blocks option in the generate command."
     )
     click.echo("Example:")
-    click.echo('  glyph-catcher generate --unicode-blocks "Basic Latin" \\')
+    click.echo('  uniff-gen generate --unicode-blocks "Basic Latin" \\')
     click.echo('  --unicode-blocks "Arrows"')
 
 
-def main():
-    """Entry point for the CLI."""
+def parse_args():
+    """
+    Parse command-line arguments and return the appropriate options.
 
+    This function is used by __main__.py to get the parsed arguments.
+
+    Returns:
+        The result of cli() which is the Click command group execution
+    """
     return cli()
 
 
-if __name__ == "__main__":
-    main()
+def get_generate_options(
+    format="csv",
+    output_dir=".",
+    use_cache=False,
+    cache_dir=DEFAULT_CACHE_DIR,
+    use_temp_cache=False,
+    unicode_blocks=None,
+    exit_on_error=False,
+    data_dir=None,
+    no_master_file=False,
+    dataset=DATASET_EVERYDAY,
+    compress=False,
+):
+    """
+    Create and return options for the generate command.
+
+    This function is a non-CLI version of the generate command that can be
+    called directly from Python code.
+
+    Args:
+        format: Output format (csv, json, lua, txt, all)
+        output_dir: Output directory
+        use_cache: Whether to use cached files if available
+        cache_dir: Directory to store cached files
+        use_temp_cache: Whether to use temporary cache directory
+        unicode_blocks: List of Unicode block names to include
+        exit_on_error: Whether to exit with code 1 on error
+        data_dir: Directory to store the master data file
+        no_master_file: Whether to use the master data file for exporting
+        dataset: Dataset to use (every-day or complete)
+        compress: Whether to compress output files
+
+    Returns:
+        Tuple of (fetch_options, export_options, exit_on_error)
+    """
+    # Create options objects
+    fetch_options = FetchOptions(
+        use_cache=use_cache,
+        cache_dir=cache_dir,
+        use_temp_cache=use_temp_cache,
+        data_dir=data_dir,
+    )
+
+    # Convert unicode_blocks to list if specified
+    blocks_list = list(unicode_blocks) if unicode_blocks else None
+
+    export_options = ExportOptions(
+        format_type=format,
+        output_dir=output_dir,
+        unicode_blocks=blocks_list,
+        use_master_file=not no_master_file,
+        master_file_path=(
+            get_master_file_path(fetch_options) if not no_master_file else None
+        ),
+        dataset=dataset,
+        compress=compress,
+    )
+
+    return fetch_options, export_options, exit_on_error

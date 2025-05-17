@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      PYTHON_ROOT: ${{ github.workspace }}/glyph-catcher
+      PYTHON_ROOT: ${{ github.workspace }}/uniff-gen
 
     steps:
       - uses: actions/checkout@v4
@@ -48,8 +48,8 @@ jobs:
       - name: Create required directories
         run: |
           mkdir -p .cache
-          mkdir -p ~/.cache/glyph-catcher
-          mkdir -p ~/.local/share/glyph-catcher
+          mkdir -p ~/.cache/uniff-gen
+          mkdir -p ~/.local/share/uniff-gen
 
       - name: Generate datasets
         run: |
