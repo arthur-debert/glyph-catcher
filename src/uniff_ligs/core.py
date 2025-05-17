@@ -5,6 +5,7 @@ This module handles the core processing and generation of ligature data.
 """
 
 import csv
+import json
 import os
 import shutil
 from pathlib import Path
@@ -45,16 +46,16 @@ def process_ligature_data(
     data_dir = package_dir / "data"
     data_dir.mkdir(exist_ok=True)
 
+    # Determine which dataset to use
+    dataset_to_use = complete_dataset
+    if options.dataset == "everyday":
+        dataset_to_use = everyday_dataset
+
     # Determine which formats to export
     if options.format_type in ["csv", "all"]:
         csv_task = progress.add_child_item(main_task, "Generating CSV output")
 
         try:
-            # Determine which dataset to use
-            dataset_to_use = complete_dataset
-            if options.dataset == "everyday":
-                dataset_to_use = everyday_dataset
-
             # Create output filename
             output_filename = os.path.join(options.output_dir, "ligatures.csv")
 
@@ -69,18 +70,80 @@ def process_ligature_data(
                     writer = csv.writer(csvfile)
 
                     # Write header
-                    writer.writerow(["sequence", "glyph", "category", "description"])
+                    writer.writerow(
+                        [
+                            "unicode_codepoint",
+                            "unicode_name",
+                            "unicode_utf8",
+                            "sequence",
+                            "category",
+                            "description",
+                        ]
+                    )
 
                     # Write some example ligatures
-                    writer.writerow(["->", "→", "arrows", "Right Arrow"])
-                    writer.writerow(["=>", "⇒", "arrows", "Right Double Arrow"])
-                    writer.writerow(["!=", "≠", "comparison", "Not Equal To"])
-                    writer.writerow(["<=", "≤", "comparison", "Less Than or Equal To"])
-                    writer.writerow([">=", "≥", "comparison", "Greater Than or Equal To"])
-                    writer.writerow(["::", "∷", "punctuation", "Proportion"])
-                    writer.writerow(["...", "…", "punctuation", "Ellipsis"])
-                    writer.writerow(["--", "–", "punctuation", "En Dash"])
-                    writer.writerow(["---", "—", "punctuation", "Em Dash"])
+                    writer.writerow(
+                        ["U+2192", "RIGHTWARDS ARROW", "→", "->", "arrows", "Right Arrow"]
+                    )
+                    writer.writerow(
+                        [
+                            "U+21D2",
+                            "RIGHTWARDS DOUBLE ARROW",
+                            "⇒",
+                            "=>",
+                            "arrows",
+                            "Right Double Arrow",
+                        ]
+                    )
+                    writer.writerow(
+                        [
+                            "U+2260",
+                            "NOT EQUAL TO",
+                            "≠",
+                            "!=",
+                            "comparison",
+                            "Not Equal To",
+                        ]
+                    )
+                    writer.writerow(
+                        [
+                            "U+2264",
+                            "LESS-THAN OR EQUAL TO",
+                            "≤",
+                            "<=",
+                            "comparison",
+                            "Less Than or Equal To",
+                        ]
+                    )
+                    writer.writerow(
+                        [
+                            "U+2265",
+                            "GREATER-THAN OR EQUAL TO",
+                            "≥",
+                            ">=",
+                            "comparison",
+                            "Greater Than or Equal To",
+                        ]
+                    )
+                    writer.writerow(
+                        ["U+2237", "PROPORTION", "∷", "::", "punctuation", "Proportion"]
+                    )
+                    writer.writerow(
+                        [
+                            "U+2026",
+                            "HORIZONTAL ELLIPSIS",
+                            "…",
+                            "...",
+                            "punctuation",
+                            "Ellipsis",
+                        ]
+                    )
+                    writer.writerow(
+                        ["U+2013", "EN DASH", "–", "--", "punctuation", "En Dash"]
+                    )
+                    writer.writerow(
+                        ["U+2014", "EM DASH", "—", "---", "punctuation", "Em Dash"]
+                    )
 
                 output_files.append(output_filename)
                 csv_task.set_success(f"Created {output_filename} (fallback data)")
@@ -93,24 +156,38 @@ def process_ligature_data(
         json_task = progress.add_child_item(main_task, "Generating JSON output")
 
         try:
-            # First load the CSV data
-            dataset_to_use = complete_dataset
-            if options.dataset == "everyday":
-                dataset_to_use = everyday_dataset
-
             # Create output filename
             output_filename = os.path.join(options.output_dir, "ligatures.json")
 
             # Convert CSV to JSON format
-            import json
-
             if dataset_to_use.exists():
                 # Load the CSV data
                 with open(dataset_to_use, encoding="utf-8") as csvfile:
                     reader = csv.DictReader(csvfile)
-                    data = list(reader)
+                    data = []
 
-                # Convert to JSON
+                    # Process the rows
+                    for row in reader:
+                        # Handle multiple sequences if present (comma-separated)
+                        sequences = (
+                            row.get("sequence", "").split(",")
+                            if row.get("sequence")
+                            else []
+                        )
+                        sequences = [seq.strip() for seq in sequences if seq.strip()]
+
+                        # Create the JSON entry with multiple sequences
+                        entry = {
+                            "unicode_codepoint": row.get("unicode_codepoint", ""),
+                            "unicode_name": row.get("unicode_name", ""),
+                            "unicode_utf8": row.get("unicode_utf8", ""),
+                            "sequences": sequences,
+                            "category": row.get("category", ""),
+                            "description": row.get("description", ""),
+                        }
+                        data.append(entry)
+
+                # Write to JSON
                 with open(output_filename, "w", encoding="utf-8") as jsonfile:
                     json.dump(data, jsonfile, indent=2, ensure_ascii=False)
 
