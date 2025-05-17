@@ -3,10 +3,13 @@ Module for processing Unicode data files.
 """
 
 import json
+import logging
 import os
 import xml.etree.ElementTree as ElementTree
 from collections import defaultdict
 from typing import Any, Optional
+
+logger = logging.getLogger('uniff')
 
 from .config import (
     ALIAS_SOURCE_CLDR,
@@ -32,7 +35,9 @@ def get_unicode_block(code_point: int) -> str:
     unicode_blocks = get_unicode_blocks()
     for block_range, block_name in unicode_blocks.items():
         if code_point in block_range:
+            logger.debug(f"Code point {hex(code_point)} belongs to block '{block_name}'")
             return block_name
+    logger.debug(f"No block found for code point {hex(code_point)}")
     return "Unknown Block"
 
 
@@ -64,14 +69,16 @@ def parse_unicode_data(filename: str) -> dict[str, dict[str, str]]:
 
                     try:
                         char_obj = chr(int(code_point_hex, 16))
+                        block = get_unicode_block(int(code_point_hex, 16))
                         data[code_point_hex] = {
                             "name": name,
                             "category": category,
                             "char_obj": char_obj,
-                            "block": get_unicode_block(int(code_point_hex, 16)),
+                            "block": block,
                         }
+                        logger.debug(f"Parsed character {code_point_hex}: {name} ({category}) in block {block}")
                     except ValueError:
-                        print(f"Skipping invalid code point: {code_point_hex} - {name}")
+                        logger.debug(f"Skipping invalid code point: {code_point_hex} - {name}")
                         continue
         return data
     except FileNotFoundError:
@@ -252,8 +259,10 @@ def process_data_files(
         - aliases_data is a dictionary mapping code points to lists of aliases
     """
     # Parse the Unicode data files
+    logger.debug("Starting Unicode data file processing")
     unicode_data = parse_unicode_data(file_paths["unicode_data"])
     if unicode_data is None:
+        logger.debug("Failed to parse Unicode data file")
         return None, {}
 
     # Get the configured alias sources
@@ -323,9 +332,11 @@ def filter_by_dataset(
     """
     # Get the list of blocks for the dataset
     blocks = get_dataset_blocks(dataset)
+    logger.debug(f"Filtering dataset '{dataset}' with blocks: {blocks}")
 
     # If no blocks are defined or dataset is 'complete', return all data
     if not blocks or dataset == DATASET_COMPLETE:
+        logger.debug("Using complete dataset (no filtering)")
         return unicode_data, aliases_data
 
     # Filter by blocks
@@ -391,6 +402,7 @@ def save_master_data_file(
     try:
         # Create the data directory if it doesn't exist
         os.makedirs(data_dir, exist_ok=True)
+        logger.debug(f"Saving master data file to {data_dir}")
 
         # Prepare the data for serialization
         master_data = {"unicode_data": {}, "aliases_data": aliases_data}
@@ -408,7 +420,9 @@ def save_master_data_file(
         master_file_path = os.path.join(data_dir, MASTER_DATA_FILE)
         with open(master_file_path, "w", encoding="utf-8") as f:
             json.dump(master_data, f, ensure_ascii=False, indent=2)
-
+        
+        logger.debug(f"Successfully saved master data file: {master_file_path}")
+        logger.debug(f"Saved {len(unicode_data)} characters and {len(aliases_data)} alias entries")
         return master_file_path
 
     except Exception:
@@ -430,7 +444,7 @@ def load_master_data_file(
     try:
         # Check if the master file exists
         if not os.path.exists(master_file_path):
-            print(f"Master data file not found: {master_file_path}")
+            logger.debug(f"Master data file not found: {master_file_path}")
             return None, None
 
         # Load the data from the master file
@@ -444,11 +458,9 @@ def load_master_data_file(
         # Convert dictionaries to UnicodeCharInfo objects
         unicode_data = unicode_data_dict
 
-        print(f"Loaded master data file: {master_file_path}")
-        print(
-            f"Loaded {len(unicode_data)} characters and "
-            f"{sum(len(aliases) for aliases in aliases_data.values())} aliases"
-        )
+        total_aliases = sum(len(aliases) for aliases in aliases_data.values())
+        logger.debug(f"Loaded master data file: {master_file_path}")
+        logger.debug(f"Loaded {len(unicode_data)} characters and {total_aliases} aliases")
 
         return unicode_data, aliases_data
 
@@ -482,6 +494,7 @@ def get_master_file_path(fetch_options) -> str:
 
 
 def calculate_alias_statistics(aliases_data: dict[str, list[str]]) -> dict[str, Any]:
+    logger.debug("Calculating alias statistics")
     """
     Calculate statistics about aliases.
 

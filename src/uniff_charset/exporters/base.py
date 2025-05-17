@@ -1,9 +1,12 @@
 """
 Base exporter class.
 """
-
+import logging
 from abc import ABC, abstractmethod
 from typing import Optional
+
+logger = logging.getLogger('uniff')
+
 
 
 class BaseExporter(ABC):
@@ -42,6 +45,10 @@ class BaseExporter(ABC):
         aliases_data: dict[str, list[str]],
         output_filename: str,
     ) -> bool:
+        logger.debug(
+            f"Writing {len(unicode_data)} characters and {len(aliases_data)} aliases "
+            f"to {output_filename} using {self.format_type} exporter"
+        )
         """
         Write Unicode data to the specified format.
 
@@ -57,6 +64,7 @@ class BaseExporter(ABC):
 
     @abstractmethod
     def verify(self, file_path: str) -> tuple[bool, Optional[str]]:
+        logger.debug(f"Verifying {self.format_type} file: {file_path}")
         """
         Verify that a file is valid for this format.
 

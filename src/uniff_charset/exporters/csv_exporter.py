@@ -1,12 +1,15 @@
 """
 CSV exporter implementation.
 """
-
 import csv
+import logging
 from typing import Optional
 
 from ..validator import validate_csv_file
 from .base import BaseExporter
+
+logger = logging.getLogger('uniff')
+
 
 
 class CSVExporter(BaseExporter):
@@ -52,7 +55,7 @@ class CSVExporter(BaseExporter):
             True if the write was successful, False otherwise
         """
         if not unicode_data:
-            print("No Unicode data to write. Aborting CSV creation.")
+            logger.debug("No Unicode data to write. Aborting CSV creation.")
             return False
 
         # Determine the maximum number of aliases for any character
@@ -61,6 +64,7 @@ class CSVExporter(BaseExporter):
             for cp in unicode_data:
                 if cp in aliases_data:
                     max_aliases = max(max_aliases, len(aliases_data[cp]))
+        logger.debug(f"Maximum aliases per character: {max_aliases}")
 
         # Create CSV headers
         headers = ["code_point", "character", "name", "category", "block"]
@@ -68,6 +72,7 @@ class CSVExporter(BaseExporter):
             headers.append(f"alias_{i}")
 
         try:
+            logger.debug(f"Writing CSV file with headers: {', '.join(headers)}")
             with open(output_filename, "w", newline="", encoding="utf-8") as csvfile:
                 writer = csv.writer(csvfile)
                 writer.writerow(headers)
@@ -87,7 +92,7 @@ class CSVExporter(BaseExporter):
 
             return True
         except Exception as e:
-            print(f"Error writing CSV file: {e}")
+            logger.debug(f"Error writing CSV file: {e}")
             return False
 
     def verify(self, file_path: str) -> tuple[bool, Optional[str]]:
@@ -100,4 +105,9 @@ class CSVExporter(BaseExporter):
         Returns:
             A tuple of (is_valid, error_message)
         """
-        return validate_csv_file(file_path)
+        is_valid, error = validate_csv_file(file_path)
+        if not is_valid:
+            logger.debug(f"CSV validation failed: {error}")
+        else:
+            logger.debug("CSV validation successful")
+        return is_valid, error

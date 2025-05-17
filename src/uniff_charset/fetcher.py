@@ -2,6 +2,7 @@
 Module for retrieving raw Unicode data files.
 """
 
+import logging
 import os
 import shutil
 import tempfile
@@ -9,6 +10,8 @@ from typing import Optional
 
 import requests
 from uniff_core.types import FetchOptions
+
+logger = logging.getLogger('uniff')
 
 from .config import (
     CLDR_ANNOTATIONS_URL,
@@ -46,7 +49,7 @@ def download_file(url: str, options: FetchOptions) -> Optional[str]:
     if options.use_cache and cache_dir:
         cache_path = os.path.join(cache_dir, filename)
         if os.path.exists(cache_path):
-            # Using cached file
+            logger.debug(f"Using cached file: {cache_path}")
             return cache_path
     try:
         # Create a temporary file in the system's temp directory
@@ -55,6 +58,7 @@ def download_file(url: str, options: FetchOptions) -> Optional[str]:
 
         # Add a user agent to avoid rate limiting
         headers = {"User-Agent": USER_AGENT}
+        logger.debug(f"Downloading file from {url}")
 
         try:
             response = requests.get(url, stream=True, headers=headers)
@@ -69,12 +73,15 @@ def download_file(url: str, options: FetchOptions) -> Optional[str]:
                 os.makedirs(cache_dir, exist_ok=True)
                 cache_path = os.path.join(cache_dir, filename)
                 shutil.copy2(temp_file_path, cache_path)
+                logger.debug(f"Saved file to cache: {cache_path}")
                 # Clean up the temporary file
                 os.unlink(temp_file_path)
                 return cache_path
 
+            logger.debug(f"Saved file to temporary location: {temp_file_path}")
             return temp_file_path
-        except (requests.exceptions.RequestException, Exception):
+        except (requests.exceptions.RequestException, Exception) as e:
+            logger.debug(f"Error downloading file {url}: {str(e)}")
             if os.path.exists(temp_file_path):
                 os.unlink(temp_file_path)
             return None
@@ -101,8 +108,10 @@ def fetch_all_data_files(options: FetchOptions) -> dict[str, str]:
         Empty dictionary if any required file failed to download
     """
     result = {}
+    logger.debug("Starting download of Unicode data files")
 
     # Download UnicodeData.txt
+    logger.debug("Downloading UnicodeData.txt")
     unicode_data_file = download_file(UNICODE_DATA_FILE_URL, options)
     if unicode_data_file:
         result["unicode_data"] = unicode_data_file
@@ -110,6 +119,7 @@ def fetch_all_data_files(options: FetchOptions) -> dict[str, str]:
         return {}
 
     # Download NameAliases.txt
+    logger.debug("Downloading NameAliases.txt")
     name_aliases_file = download_file(NAME_ALIASES_FILE_URL, options)
     if name_aliases_file:
         result["name_aliases"] = name_aliases_file
@@ -117,6 +127,7 @@ def fetch_all_data_files(options: FetchOptions) -> dict[str, str]:
         return {}
 
     # Download NamesList.txt
+    logger.debug("Downloading NamesList.txt")
     names_list_file = download_file(NAMES_LIST_FILE_URL, options)
     if names_list_file:
         result["names_list"] = names_list_file
@@ -124,9 +135,13 @@ def fetch_all_data_files(options: FetchOptions) -> dict[str, str]:
         return {}
 
     # Download CLDR annotations (optional)
+    logger.debug("Downloading CLDR annotations")
     cldr_annotations_file = download_file(CLDR_ANNOTATIONS_URL, options)
     if cldr_annotations_file:
         result["cldr_annotations"] = cldr_annotations_file
+        logger.debug("Successfully downloaded all data files")
+    else:
+        logger.debug("CLDR annotations download failed (optional)")
 
     return result
 
@@ -146,9 +161,9 @@ def clean_cache(options: FetchOptions) -> None:
         cache_dir = DEFAULT_CACHE_DIR
 
     if cache_dir and os.path.exists(cache_dir):
-        print(f"Cleaning cache directory: {cache_dir}")
+        logger.debug(f"Cleaning cache directory: {cache_dir}")
         try:
             shutil.rmtree(cache_dir)
-            print(f"Cache directory removed: {cache_dir}")
+            logger.debug(f"Cache directory removed: {cache_dir}")
         except Exception as e:
-            print(f"Error cleaning cache directory: {e}")
+            logger.debug(f"Error cleaning cache directory: {e}")

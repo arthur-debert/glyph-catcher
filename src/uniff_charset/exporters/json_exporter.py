@@ -1,12 +1,15 @@
 """
 JSON exporter implementation.
 """
-
 import json
+import logging
 from typing import Optional
 
 from ..validator import validate_json_file
 from .base import BaseExporter
+
+logger = logging.getLogger('uniff')
+
 
 
 class JSONExporter(BaseExporter):
@@ -52,8 +55,10 @@ class JSONExporter(BaseExporter):
             True if the write was successful, False otherwise
         """
         if not unicode_data:
-            print("No Unicode data to write. Aborting JSON creation.")
+            logger.debug("No Unicode data to write. Aborting JSON creation.")
             return False
+
+        logger.debug(f"Creating JSON structure for {len(unicode_data)} characters")
 
         json_data = []
         for code_point_hex, data in unicode_data.items():
@@ -68,11 +73,13 @@ class JSONExporter(BaseExporter):
             json_data.append(entry)
 
         try:
+            logger.debug(f"Writing JSON data to {output_filename}")
             with open(output_filename, "w", encoding="utf-8") as f:
                 json.dump(json_data, f, indent=2, ensure_ascii=False)
+            logger.debug(f"Successfully wrote {len(json_data)} entries to JSON file")
             return True
         except Exception as e:
-            print(f"Error writing JSON file: {e}")
+            logger.debug(f"Error writing JSON file: {e}")
             return False
 
     def verify(self, file_path: str) -> tuple[bool, Optional[str]]:
@@ -85,4 +92,9 @@ class JSONExporter(BaseExporter):
         Returns:
             A tuple of (is_valid, error_message)
         """
-        return validate_json_file(file_path)
+        is_valid, error = validate_json_file(file_path)
+        if not is_valid:
+            logger.debug(f"JSON validation failed: {error}")
+        else:
+            logger.debug("JSON validation successful")
+        return is_valid, error
