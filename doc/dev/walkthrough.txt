@@ -1,0 +1,51 @@
+Charset Generation Workflow
+
+When generating charsets, the overall flow is:
+
+1. Fetching Data:
+    We download the following files from unicode.org (or use local cache if it exists and no --force flag is passed):
+    - UnicodeData.txt: Main character database
+    - NamesList.txt: Character names and annotations
+    - NameAliases.txt: Formal name aliases
+    - CLDR annotations (optional): Common locale data repository annotations
+
+    The caching system supports both temporary and persistent caches, with cache location configurable.
+
+2. Processing:
+    We process this data to generate a master dataset, particularly focusing on aliases (akas) for each character from several sources:
+    - Formal aliases from NameAliases.txt
+    - Informative aliases from NamesList.txt
+    - CLDR annotations when available
+
+    For efficient caching of the master data:
+    - Calculate MD5 checksum for each source file
+    - Concatenate and checksum these checksums to create a unique identifier
+    - Check for existing master data with this checksum
+    - Use cached data if found (unless --force), otherwise process new master data
+
+    The data can be filtered by:
+    - Predefined datasets (e.g., 'every-day', 'complete')
+    - Specific Unicode blocks
+
+3. Exporting:
+    We use an optimized multi-format export process that:
+    - Processes data once for all requested formats
+    - For each format:
+        * Writes format-specific headers (e.g., CSV headers, JSON opening bracket)
+        * Processes each character entry:
+            - CSV: Writes rows with fixed number of alias columns
+            - JSON: Writes entries with dynamic alias arrays
+            - Lua: Creates tables with escaped strings
+            - TXT: Generates pipe-separated lines optimized for grep
+        * Writes format-specific footers
+
+    Key optimizations:
+        * Streams data from master file to avoid loading everything at once
+        * Writes each format simultaneously to minimize I/O operations
+        * Handles special character escaping for each format
+
+4. Compression:
+    - Uses gzip with maximum compression level (9)
+    - Creates temporary uncompressed files during export
+    - Verifies exported files before compression
+    - Cleans up temporary files after successful compression

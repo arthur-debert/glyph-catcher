@@ -2,7 +2,9 @@
 Module for processing Unicode data files.
 """
 
+import hashlib
 import json
+import logging
 import os
 import xml.etree.ElementTree as ElementTree
 from collections import defaultdict
@@ -13,10 +15,13 @@ from .config import (
     ALIAS_SOURCE_FORMAL,
     ALIAS_SOURCE_INFORMATIVE,
     DATASET_COMPLETE,
+    DATASET_TEST,
     get_alias_sources,
     get_dataset_blocks,
     get_unicode_blocks,
 )
+
+logger = logging.getLogger("uniff")
 
 
 def get_unicode_block(code_point: int) -> str:
@@ -32,7 +37,9 @@ def get_unicode_block(code_point: int) -> str:
     unicode_blocks = get_unicode_blocks()
     for block_range, block_name in unicode_blocks.items():
         if code_point in block_range:
+            logger.debug(f"Code point {hex(code_point)} belongs to block '{block_name}'")
             return block_name
+    logger.debug(f"No block found for code point {hex(code_point)}")
     return "Unknown Block"
 
 
@@ -64,14 +71,21 @@ def parse_unicode_data(filename: str) -> dict[str, dict[str, str]]:
 
                     try:
                         char_obj = chr(int(code_point_hex, 16))
+                        block = get_unicode_block(int(code_point_hex, 16))
                         data[code_point_hex] = {
                             "name": name,
                             "category": category,
                             "char_obj": char_obj,
-                            "block": get_unicode_block(int(code_point_hex, 16)),
+                            "block": block,
                         }
+                        logger.debug(
+                            f"Parsed character {code_point_hex}: {name}"
+                            f"({category}) in block {block}"
+                        )
                     except ValueError:
-                        print(f"Skipping invalid code point: {code_point_hex} - {name}")
+                        logger.debug(
+                            f"Skipping invalid code point: {code_point_hex} - {name}"
+                        )
                         continue
         return data
     except FileNotFoundError:
@@ -252,8 +266,10 @@ def process_data_files(
         - aliases_data is a dictionary mapping code points to lists of aliases
     """
     # Parse the Unicode data files
+    logger.debug("Starting Unicode data file processing")
     unicode_data = parse_unicode_data(file_paths["unicode_data"])
     if unicode_data is None:
+        logger.debug("Failed to parse Unicode data file")
         return None, {}
 
     # Get the configured alias sources
@@ -316,11 +332,33 @@ def filter_by_dataset(
     Args:
         unicode_data: Dictionary mapping code points to character information
         aliases_data: Dictionary mapping code points to lists of aliases
-        dataset: Dataset name (e.g., 'every-day', 'complete')
+        dataset: Dataset name (e.g., 'every-day', 'complete', 'test')
 
     Returns:
         Tuple of filtered (unicode_data, aliases_data)
     """
+    # Special case for the test dataset - just take a small subset
+    if dataset == DATASET_TEST:
+        # Create a smaller dataset for testing - first 50 characters from Basic Latin
+        test_unicode_data = {}
+        test_aliases_data = {}
+
+        # Sort code points for deterministic results
+        code_points = sorted(unicode_data.keys())
+        count = 0
+
+        for code_point in code_points:
+            char_info = unicode_data[code_point]
+            if "block" in char_info and char_info["block"] == "Basic Latin":
+                test_unicode_data[code_point] = char_info
+                if code_point in aliases_data:
+                    test_aliases_data[code_point] = aliases_data[code_point]
+                count += 1
+                if count >= 50:  # Only take the first 50 characters
+                    break
+
+        return test_unicode_data, test_aliases_data
+
     # Get the list of blocks for the dataset
     blocks = get_dataset_blocks(dataset)
 
@@ -371,26 +409,37 @@ def save_master_data_file(
     unicode_data: dict[str, dict[str, str]],
     aliases_data: dict[str, list[str]],
     data_dir: str,
+    file_paths: Optional[dict[str, str]] = None,
+    checksum: Optional[str] = None,
 ) -> Optional[str]:
     """
     Save the processed Unicode data to a master JSON file.
+
+    If file_paths or checksum is provided, the filename will include a checksum
+    to enable caching and reuse of processed data.
+
+    If file_paths or checksum is provided, the filename will include a checksum
+    to enable caching and reuse of processed data.
 
     Args:
         unicode_data: Dictionary mapping code points to character information
         aliases_data: Dictionary mapping code points to lists of aliases
         data_dir: Directory to save the master data file
+        file_paths: Dictionary mapping file types to file paths (optional)
+        checksum: Pre-calculated checksum string (optional)
+        file_paths: Dictionary mapping file types to file paths (optional)
+        checksum: Pre-calculated checksum string (optional)
 
     Returns:
         Path to the saved master data file, or None if saving failed
     """
-    from .config import MASTER_DATA_FILE
-
     if not unicode_data or not aliases_data:
         return None
 
     try:
         # Create the data directory if it doesn't exist
         os.makedirs(data_dir, exist_ok=True)
+        logger.debug(f"Saving master data file to {data_dir}")
 
         # Prepare the data for serialization
         master_data = {"unicode_data": {}, "aliases_data": aliases_data}
@@ -404,14 +453,46 @@ def save_master_data_file(
                 "block": char_info.get("block", "Unknown Block"),
             }
 
+        # Determine the master file path based on checksum if available
+        if checksum or file_paths:
+            # Get a file path that includes the checksum
+            master_file_path = get_master_file_path(
+                fetch_options=type("FetchOptions", (), {"data_dir": data_dir})(),
+                file_paths=file_paths,
+                checksum=checksum,
+            )
+        else:
+            # Use the default master file path
+            from .config import MASTER_DATA_FILE
+
+            master_file_path = os.path.join(data_dir, MASTER_DATA_FILE)
+
+        # Determine the master file path based on checksum if available
+        if checksum or file_paths:
+            # Get a file path that includes the checksum
+            master_file_path = get_master_file_path(
+                fetch_options=type("FetchOptions", (), {"data_dir": data_dir})(),
+                file_paths=file_paths,
+                checksum=checksum,
+            )
+        else:
+            # Use the default master file path
+            from .config import MASTER_DATA_FILE
+
+            master_file_path = os.path.join(data_dir, MASTER_DATA_FILE)
+
         # Save the data to the master file
-        master_file_path = os.path.join(data_dir, MASTER_DATA_FILE)
         with open(master_file_path, "w", encoding="utf-8") as f:
             json.dump(master_data, f, ensure_ascii=False, indent=2)
 
+        logger.debug(f"Successfully saved master data file: {master_file_path}")
+        logger.debug(
+            f"Saved {len(unicode_data)} characters and {len(aliases_data)} alias entries"
+        )
         return master_file_path
 
-    except Exception:
+    except Exception as e:
+        print(f"Error saving master data file: {e}")
         return None
 
 
@@ -430,7 +511,7 @@ def load_master_data_file(
     try:
         # Check if the master file exists
         if not os.path.exists(master_file_path):
-            print(f"Master data file not found: {master_file_path}")
+            logger.debug(f"Master data file not found: {master_file_path}")
             return None, None
 
         # Load the data from the master file
@@ -444,11 +525,9 @@ def load_master_data_file(
         # Convert dictionaries to UnicodeCharInfo objects
         unicode_data = unicode_data_dict
 
-        print(f"Loaded master data file: {master_file_path}")
-        print(
-            f"Loaded {len(unicode_data)} characters and "
-            f"{sum(len(aliases) for aliases in aliases_data.values())} aliases"
-        )
+        total_aliases = sum(len(aliases) for aliases in aliases_data.values())
+        logger.debug(f"Loaded master data file: {master_file_path}")
+        logger.debug(f"Loaded {len(unicode_data)} characters and {total_aliases} aliases")
 
         return unicode_data, aliases_data
 
@@ -460,12 +539,25 @@ def load_master_data_file(
         return None, None
 
 
-def get_master_file_path(fetch_options) -> str:
+def get_master_file_path(
+    fetch_options,
+    file_paths: Optional[dict[str, str]] = None,
+    checksum: Optional[str] = None,
+) -> str:
     """
     Get the path to the master data file based on the fetch options.
 
+    If file_paths is provided, a checksum will be calculated and included in
+    the filename.
+    If checksum is provided directly, it will be used instead of calculating it
+    from file_paths.
+    If neither file_paths nor checksum is provided, the base master file path
+    is returned.
+
     Args:
         fetch_options: Options for fetching Unicode data files
+        file_paths: Dictionary mapping file types to file paths (optional)
+        checksum: Pre-calculated checksum string (optional)
 
     Returns:
         Path to the master data file
@@ -477,8 +569,29 @@ def get_master_file_path(fetch_options) -> str:
     if not data_dir:
         data_dir = DEFAULT_DATA_DIR
 
+    # Create a filename with the checksum if we have file paths or a checksum
+    if checksum:
+        master_filename = f"unicode_master_data_{checksum}.json"
+    elif file_paths:
+        calculated_checksum = calculate_source_files_checksum(file_paths)
+        master_filename = f"unicode_master_data_{calculated_checksum}.json"
+    else:
+        master_filename = MASTER_DATA_FILE
+
+    return os.path.join(data_dir, master_filename)
+
+    # Create a filename with the checksum if we have file paths or a checksum
+    if checksum:
+        master_filename = f"unicode_master_data_{checksum}.json"
+    elif file_paths:
+        calculated_checksum = calculate_source_files_checksum(file_paths)
+        master_filename = f"unicode_master_data_{calculated_checksum}.json"
+    else:
+        master_filename = MASTER_DATA_FILE
+
     # Return the path to the master data file
-    return os.path.join(data_dir, MASTER_DATA_FILE)
+    return os.path.join(data_dir, master_filename)
+    return os.path.join(data_dir, master_filename)
 
 
 def calculate_alias_statistics(aliases_data: dict[str, list[str]]) -> dict[str, Any]:
@@ -541,3 +654,75 @@ def calculate_alias_statistics(aliases_data: dict[str, list[str]]) -> dict[str, 
         "min_aliases": min_aliases,
         "chars_with_no_aliases": chars_with_no_aliases,
     }
+
+
+def calculate_file_checksum(file_path: str) -> str:
+    """
+    Calculate MD5 checksum of a file.
+
+    Args:
+        file_path: Path to the file
+
+    Returns:
+        MD5 checksum as a hexadecimal string
+    """
+    if not os.path.exists(file_path):
+        return ""
+
+    hash_md5 = hashlib.md5()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+
+def calculate_source_files_checksum(file_paths: dict[str, str]) -> str:
+    """
+    Calculate a combined checksum of all source files.
+
+    Args:
+        file_paths: Dictionary mapping file types to file paths
+
+    Returns:
+        Combined MD5 checksum as a hexadecimal string
+    """
+    # Sort the file types to ensure a consistent order
+    file_types = sorted(file_paths.keys())
+
+    # Calculate checksums for each file
+    checksums = []
+    for file_type in file_types:
+        file_path = file_paths[file_type]
+        checksum = calculate_file_checksum(file_path)
+        checksums.append(f"{file_type}:{checksum}")
+
+    # Create a combined checksum string and hash it
+    combined_string = ",".join(checksums)
+    hash_md5 = hashlib.md5()
+    hash_md5.update(combined_string.encode("utf-8"))
+
+    return hash_md5.hexdigest()
+
+
+def find_master_file_by_checksum(data_dir: str, checksum: str) -> Optional[str]:
+    """
+    Find an existing master file with the given checksum.
+
+    Args:
+        data_dir: Directory to search for master data files
+        checksum: Checksum to look for in file names
+
+    Returns:
+        Path to the master file if found, None otherwise
+    """
+    if not os.path.exists(data_dir):
+        return None
+
+    # Look for a file with the checksum in its name
+    master_filename = f"unicode_master_data_{checksum}.json"
+    master_file_path = os.path.join(data_dir, master_filename)
+
+    if os.path.exists(master_file_path):
+        return master_file_path
+
+    return None

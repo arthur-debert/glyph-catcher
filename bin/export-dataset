@@ -12,6 +12,8 @@ mkdir -p "$OUTPUT_DIR"
 DATASET="every-day"
 FORMAT="lua"
 COMPRESS=true
+FORCE=false
+DEBUG=false
 
 # Process arguments
 while [[ $# -gt 0 ]]; do
@@ -28,14 +30,22 @@ while [[ $# -gt 0 ]]; do
     COMPRESS=false
     shift
     ;;
+  --force)
+    FORCE=true
+    shift
+    ;;
   --output-dir)
     OUTPUT_DIR="$2"
     mkdir -p "$OUTPUT_DIR"
     shift 2
     ;;
+  --debug)
+    DEBUG=true
+    shift
+    ;;
   *)
     echo "Unknown option: $1"
-    echo "Usage: $0 [--dataset <dataset>] [--format <format>] [--no-compress] [--output-dir <dir>]"
+    echo "Usage: $0 [--dataset <dataset>] [--format <format>] [--no-compress] [--output-dir <dir>] [--debug]"
     exit 1
     ;;
   esac
@@ -45,13 +55,24 @@ echo "Exporting dataset: $DATASET"
 echo "Format: $FORMAT"
 echo "Output directory: $OUTPUT_DIR"
 echo "Compress: $COMPRESS"
+echo "Debug mode: $DEBUG"
 
 # Build the command
 CMD="poetry run uniff-charset generate --format $FORMAT --dataset $DATASET --output-dir $OUTPUT_DIR"
 
+# Add debug flag if enabled
+if [ "$DEBUG" = true ]; then
+  CMD="$CMD --debug"
+fi
+
 # Add compression flag if needed
 if [ "$COMPRESS" = true ]; then
   CMD="$CMD --compress"
+fi
+
+# Add force flag if needed
+if [ "$FORCE" = true ]; then
+  CMD="$CMD --force"
 fi
 
 # Execute the command

@@ -2,6 +2,9 @@
 Registry for exporters.
 """
 
+import logging
+
+logger = logging.getLogger('uniff')
 
 class ExporterRegistry:
     """
@@ -23,7 +26,9 @@ class ExporterRegistry:
         Args:
             exporter: The exporter to register
         """
-        self._exporters[exporter.format_type] = exporter
+        format_type = exporter.format_type
+        logger.debug(f"Registering exporter for format: {format_type}")
+        self._exporters[format_type] = exporter
 
     def get_exporter(self, format_type: str):
         """
@@ -36,7 +41,12 @@ class ExporterRegistry:
             The exporter for the specified format, or None if no exporter is registered
             for that format
         """
-        return self._exporters.get(format_type)
+        exporter = self._exporters.get(format_type)
+        if exporter is None:
+            logger.debug(f"No exporter found for format: {format_type}")
+        else:
+            logger.debug(f"Found exporter for format: {format_type}")
+        return exporter
 
     def get_all_exporters(self) -> dict[str, object]:
         """
@@ -45,7 +55,9 @@ class ExporterRegistry:
         Returns:
             A dictionary mapping format types to exporters
         """
-        return self._exporters.copy()
+        exporters = self._exporters.copy()
+        logger.debug(f"Retrieved all exporters: {', '.join(exporters.keys())}")
+        return exporters
 
     def get_supported_formats(self) -> list[str]:
         """
@@ -54,4 +66,6 @@ class ExporterRegistry:
         Returns:
             A list of all format types that have registered exporters
         """
-        return list(self._exporters.keys())
+        formats = list(self._exporters.keys())
+        logger.debug(f"Supported formats: {', '.join(formats)}")
+        return formats

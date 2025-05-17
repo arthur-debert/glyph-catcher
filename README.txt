@@ -124,6 +124,7 @@ Charset options:
   --exit-on-error        Exit with code 1 on error
   --data-dir DIR         Directory to store the master data file (default: ~/.local/share/uniff-gen)
   --no-master-file       Don't use the master data file for exporting
+  --debug                Enable debug logging to /tmp/unifill.log
 
 Ligature options:
   --format FORMAT        Output format: csv, json, lua, txt, or all (default: csv)

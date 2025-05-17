@@ -1,11 +1,14 @@
 """
 Lua exporter implementation.
 """
-
+import logging
 from typing import Optional
 
 from ..validator import validate_lua_file
 from .base import BaseExporter
+
+logger = logging.getLogger('uniff')
+
 
 
 class LuaExporter(BaseExporter):
@@ -51,8 +54,10 @@ class LuaExporter(BaseExporter):
             True if the write was successful, False otherwise
         """
         if not unicode_data:
-            print("No Unicode data to write. Aborting Lua module creation.")
+            logger.debug("No Unicode data to write. Aborting Lua module creation.")
             return False
+
+        logger.debug(f"Creating Lua module for {len(unicode_data)} characters")
 
         try:
             with open(output_filename, "w", encoding="utf-8") as f:
@@ -64,6 +69,7 @@ class LuaExporter(BaseExporter):
                     aliases = aliases_data.get(code_point_hex, [])
                     # Handle special characters for Lua
                     char = data["char_obj"]
+                    logger.debug(f"Processing character U+{code_point_hex}: {data['name']}")
                     if char == "\n":
                         char = "\\n"
                     elif char == "\r":
@@ -121,9 +127,10 @@ class LuaExporter(BaseExporter):
                     f.write("  },\n")
 
                 f.write("}\n")
+            logger.debug(f"Successfully wrote Lua module to {output_filename}")
             return True
         except Exception as e:
-            print(f"Error writing Lua module: {e}")
+            logger.debug(f"Error writing Lua module: {e}")
             return False
 
     def verify(self, file_path: str) -> tuple[bool, Optional[str]]:
@@ -136,4 +143,9 @@ class LuaExporter(BaseExporter):
         Returns:
             A tuple of (is_valid, error_message)
         """
-        return validate_lua_file(file_path)
+        is_valid, error = validate_lua_file(file_path)
+        if not is_valid:
+            logger.debug(f"Lua validation failed: {error}")
+        else:
+            logger.debug("Lua validation successful")
+        return is_valid, error

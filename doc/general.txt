@@ -40,7 +40,12 @@ b. Charset: Complete
     This is about 65k characters, weighing at 800kb compressed and 7MB
     otherwise.
 
-c. Ligatures
+c. Test
+
+  This is a small dataset, only to be used during testing.
+
+
+d. Ligatures
 
     Mappings of ASCII sequences to single glyphs (e.g., -> to →)
 
@@ -113,6 +118,7 @@ The codebase is structured into three main packages:
 a. uniff_core
    - Shared functionality used by both charset and ligature processors
    - Contains common types, progress reporting, and exporter base classes
+   - Logging system with debug mode support (writes to /tmp/unifill.log)
 
 b. uniff_charset (previously uniff_gen)
    - Entry Point: The command-line interface is initialized through the main() function

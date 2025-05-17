@@ -17,7 +17,8 @@ except ImportError:
 # Dataset constants
 DATASET_EVERYDAY = "every-day"
 DATASET_COMPLETE = "complete"
-DATASETS = [DATASET_EVERYDAY, DATASET_COMPLETE]
+DATASET_TEST = "test"
+DATASETS = [DATASET_EVERYDAY, DATASET_COMPLETE, DATASET_TEST]
 CONFIG_YAML_PATH = os.path.join(os.path.dirname(__file__), "config.yaml")
 
 # Alias source constants

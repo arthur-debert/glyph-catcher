@@ -1,11 +1,14 @@
 """
 TXT exporter implementation.
 """
-
+import logging
 from typing import Optional
 
 from ..validator import validate_txt_file
 from .base import BaseExporter
+
+logger = logging.getLogger('uniff')
+
 
 
 class TxtExporter(BaseExporter):
@@ -51,11 +54,14 @@ class TxtExporter(BaseExporter):
             True if the write was successful, False otherwise
         """
         if not unicode_data:
-            print("No Unicode data to write. Aborting text file creation.")
+            logger.debug("No Unicode data to write. Aborting text file creation.")
             return False
+
+        logger.debug(f"Creating text file for {len(unicode_data)} characters")
 
         try:
             with open(output_filename, "w", encoding="utf-8") as f:
+                logger.debug("Writing characters in pipe-separated format")
                 for code_point_hex, data in unicode_data.items():
                     # Format: character|name|code_point|category|block|alias1|alias2|...
                     # Optimized for grep with searchable fields first
@@ -74,10 +80,13 @@ class TxtExporter(BaseExporter):
                         line_parts.extend(aliases_data[code_point_hex])
 
                     # Join with pipe separator
-                    f.write("|".join(line_parts) + "\n")
+                    line = "|".join(line_parts)
+                    f.write(line + "\n")
+                    logger.debug(f"Wrote entry for U+{code_point_hex}: {data['name']}")
+            logger.debug(f"Successfully wrote text file to {output_filename}")
             return True
         except Exception as e:
-            print(f"Error writing text file: {e}")
+            logger.debug(f"Error writing text file: {e}")
             return False
 
     def verify(self, file_path: str) -> tuple[bool, Optional[str]]:
@@ -90,4 +99,9 @@ class TxtExporter(BaseExporter):
         Returns:
             A tuple of (is_valid, error_message)
         """
-        return validate_txt_file(file_path)
+        is_valid, error = validate_txt_file(file_path)
+        if not is_valid:
+            logger.debug(f"Text file validation failed: {error}")
+        else:
+            logger.debug("Text file validation successful")
+        return is_valid, error

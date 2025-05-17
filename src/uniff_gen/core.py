@@ -6,9 +6,12 @@ separated from CLI-specific code.
 """
 
 import inspect
+import logging
 import os
 
 from .config import DEFAULT_CACHE_DIR, DEFAULT_DATA_DIR
+
+logger = logging.getLogger('uniff')
 from .exporter import export_data, save_source_files
 from .fetcher import fetch_all_data_files
 from .processor import process_data_files, save_master_data_file
@@ -96,6 +99,10 @@ def process_unicode_data(
 
     # Fetch the data files
     try:
+        logger.debug("Starting Unicode data processing")
+        logger.debug(f"Fetch options: cache={fetch_options.use_cache}, temp_cache={fetch_options.use_temp_cache}")
+        logger.debug(f"Export options: format={export_options.format_type}, output_dir={export_options.output_dir}")
+        
         file_paths = fetch_all_data_files(fetch_options)
 
         # Special case for test_process_unicode_data_success
@@ -137,6 +144,7 @@ def process_unicode_data(
         return False, []
     # Process the data files
     try:
+        logger.debug("Processing Unicode data files")
         unicode_data, aliases_data = process_data_files(file_paths)
         if not unicode_data or not aliases_data:
             if not in_test:
@@ -155,6 +163,7 @@ def process_unicode_data(
         if in_test:
             master_file_path = "/tmp/master_data.json"  # Mock path for tests
         else:
+            logger.debug(f"Saving master data file to {data_dir}")
             master_file_path = save_master_data_file(unicode_data, aliases_data, data_dir)
 
         if not master_file_path and not in_test:
@@ -179,6 +188,7 @@ def process_unicode_data(
         return False, []
     # Export the data
     try:
+        logger.debug("Starting data export")
         # Determine which formats to export
         formats = (
             ["csv", "json", "lua", "txt"]
@@ -195,6 +205,7 @@ def process_unicode_data(
                 )
 
         # Export the data
+        logger.debug(f"Exporting data in formats: {', '.join(formats)}")
         output_files = export_data(unicode_data, aliases_data, export_options)
 
         # Update format progress items
@@ -238,9 +249,11 @@ def process_unicode_data(
 
     # Save the source files
     try:
+        logger.debug("Saving source files")
         save_source_files(file_paths, export_options.output_dir)
     except Exception as e:
         if not in_test:
             progress.log(f"Warning: Failed to save source files: {str(e)}")
 
+    logger.debug(f"Processing completed successfully with {len(output_files)} output files")
     return bool(output_files), output_files

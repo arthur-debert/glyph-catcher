@@ -1,5 +1,8 @@
 # Dataset configurations for Unifill
 
+# Debug mode (false by default)
+debug: false
+
 # Alias sources to use when processing Unicode data
 # Available sources: formal_aliases, informative_aliases, cldr_annotations
 alias-sources:
