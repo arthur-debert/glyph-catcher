@@ -1,4 +1,4 @@
-GLYPH-CATCHER
+uniff-gen
 -------------------------
 
 This project downloads and processes Unicode character data from multiple sources
@@ -11,14 +11,14 @@ TLDR
 Most likely the only thing relevant for you are the actual datasets.
 They get built on new git tags and can be accessed with :
 
-   https://github.com/arthur-debert/glyph-catcher/releases/latest/download/unicode.complete.lua.gz
-   https://github.com/arthur-debert/glyph-catcher/releases/latest/download/unicode.every-day.lua.gz
+   https://github.com/arthur-debert/uniff-gen/releases/latest/download/unicode.complete.lua.gz
+   https://github.com/arthur-debert/uniff-gen/releases/latest/download/unicode.every-day.lua.gz
 
 
 OVERVIEW
 ---------------
 
-Glyph-catcher is a Python package that:
+uniff-gen is a Python package that:
 
 1. Downloads Unicode data files from official sources
 2. Processes the data to create a normalized dataset
@@ -87,7 +87,7 @@ and the exported formats. The master file:
 
 - Contains all Unicode characters and their aliases
 - Is not filtered by Unicode blocks
-- Is stored in a persistent location (by default in ~/.local/share/glyph-catcher)
+- Is stored in a persistent location (by default in ~/.local/share/uniff-gen)
 - Is used as the source for exporting to different formats
 
 This approach provides several benefits:
@@ -99,17 +99,17 @@ USAGE
 -----
 
 Basic usage:
-  poetry run glyph-catcher generate --format all
+  poetry run uniff-gen generate --format all
 
 Options:
   --format FORMAT        Output format: csv, json, lua, txt, or all (default: csv)
   --output-dir DIR       Output directory (default: current directory)
   --use-cache            Use cached files if available
-  --cache-dir DIR        Directory to store cached files (default: ~/.cache/glyph-catcher)
-  --use-temp-cache       Use temporary cache directory (/tmp/glyph-catcher-cache)
+  --cache-dir DIR        Directory to store cached files (default: ~/.cache/uniff-gen)
+  --use-temp-cache       Use temporary cache directory (/tmp/uniff-gen-cache)
   --unicode-blocks BLOCK Unicode block(s) to include (can be specified multiple times)
   --exit-on-error        Exit with code 1 on error
-  --data-dir DIR         Directory to store the master data file (default: ~/.local/share/glyph-catcher)
+  --data-dir DIR         Directory to store the master data file (default: ~/.local/share/uniff-gen)
   --no-master-file       Don't use the master data file for exporting
 
 Commands:
@@ -120,16 +120,16 @@ Commands:
 
 Examples:
   # Generate all formats
-  glyph-catcher generate --format all
+  uniff-gen generate --format all
 
   # Generate only Lua format with specific Unicode blocks
-  glyph-catcher generate --format lua --unicode-blocks "Basic Latin" --unicode-blocks "Arrows"
+  uniff-gen generate --format lua --unicode-blocks "Basic Latin" --unicode-blocks "Arrows"
 
   # Clean the cache
-  glyph-catcher clean-cache
+  uniff-gen clean-cache
 
   # List available Unicode blocks
-  glyph-catcher list-blocks
+  uniff-gen list-blocks
 
 OUTPUT FORMATS
 -------------
@@ -183,11 +183,11 @@ CACHE MANAGEMENT
 
 The package provides several options for managing cached files:
 
-1. Default cache location: ~/.cache/glyph-catcher
+1. Default cache location: ~/.cache/uniff-gen
    - Persistent across sessions
    - Used when --use-cache is specified
 
-2. Temporary cache location: /tmp/glyph-catcher-cache
+2. Temporary cache location: /tmp/uniff-gen-cache
    - Cleared on system reboot
    - Used when --use-temp-cache is specified
 
@@ -196,7 +196,7 @@ The package provides several options for managing cached files:
    - Used when both --use-cache and --cache-dir are specified
 
 To clean the cache:
-  glyph-catcher clean-cache
+  uniff-gen clean-cache
 
 ERROR HANDLING
 ------------

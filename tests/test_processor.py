@@ -9,7 +9,7 @@ import unittest
 from collections import defaultdict
 from unittest.mock import MagicMock, patch
 
-from glyph_catcher.processor import (
+from uniff_gen.processor import (
     parse_cldr_annotations,
     parse_name_aliases,
     parse_names_list,
@@ -245,7 +245,7 @@ class TestProcessor(unittest.TestCase):
         # Check that the function returned an empty dictionary
         self.assertEqual(result, {})
 
-    @patch("glyph_catcher.processor.get_alias_sources")
+    @patch("uniff_gen.processor.get_alias_sources")
     def test_process_data_files_merges_aliases(self, mock_get_alias_sources):
         """
         Test that process_data_files correctly merges aliases from different
@@ -260,15 +260,9 @@ class TestProcessor(unittest.TestCase):
 
         # Create test data files
         with tempfile.NamedTemporaryFile(mode="w", delete=False) as unicode_data_file:
-            unicode_data_file.write(
-                "0041;LATIN CAPITAL LETTER A;Lu;0;L;;;;;N;;;;0061;\n"
-            )
-            unicode_data_file.write(
-                "0042;LATIN CAPITAL LETTER B;Lu;0;L;;;;;N;;;;0062;\n"
-            )
-            unicode_data_file.write(
-                "0043;LATIN CAPITAL LETTER C;Lu;0;L;;;;;N;;;;0063;\n"
-            )
+            unicode_data_file.write("0041;LATIN CAPITAL LETTER A;Lu;0;L;;;;;N;;;;0061;\n")
+            unicode_data_file.write("0042;LATIN CAPITAL LETTER B;Lu;0;L;;;;;N;;;;0062;\n")
+            unicode_data_file.write("0043;LATIN CAPITAL LETTER C;Lu;0;L;;;;;N;;;;0063;\n")
             unicode_data_path = unicode_data_file.name
 
         with tempfile.NamedTemporaryFile(mode="w", delete=False) as name_aliases_file:
@@ -324,11 +318,11 @@ class TestProcessor(unittest.TestCase):
             os.unlink(name_aliases_path)
             os.unlink(names_list_path)
 
-    @patch("glyph_catcher.processor.parse_unicode_data")
-    @patch("glyph_catcher.processor.parse_name_aliases")
-    @patch("glyph_catcher.processor.parse_names_list")
-    @patch("glyph_catcher.processor.parse_cldr_annotations")
-    @patch("glyph_catcher.processor.get_alias_sources")
+    @patch("uniff_gen.processor.parse_unicode_data")
+    @patch("uniff_gen.processor.parse_name_aliases")
+    @patch("uniff_gen.processor.parse_names_list")
+    @patch("uniff_gen.processor.parse_cldr_annotations")
+    @patch("uniff_gen.processor.get_alias_sources")
     def test_process_data_files_success(
         self,
         mock_get_alias_sources,
@@ -402,7 +396,7 @@ class TestProcessor(unittest.TestCase):
         mock_parse_names.assert_called_once_with("/path/to/NamesList.txt")
         mock_parse_cldr.assert_called_once_with("/path/to/en.xml")
 
-    @patch("glyph_catcher.processor.parse_unicode_data")
+    @patch("uniff_gen.processor.parse_unicode_data")
     def test_process_data_files_unicode_data_missing(self, mock_parse_unicode):
         """Test processing data files when UnicodeData.txt parsing fails."""
         # Set up the mock to return None
@@ -423,7 +417,7 @@ class TestProcessor(unittest.TestCase):
 
     def test_normalize_alias(self):
         """Test the normalize_alias function."""
-        from glyph_catcher.processor import normalize_alias
+        from uniff_gen.processor import normalize_alias
 
         # Test basic normalization
         self.assertEqual(normalize_alias("TEST"), "test")
@@ -447,7 +441,7 @@ class TestProcessor(unittest.TestCase):
     def test_alias_deduplication(self):
         """Test that duplicate aliases are properly deduplicated."""
 
-        from glyph_catcher.processor import process_data_files
+        from uniff_gen.processor import process_data_files
 
         # Create mock data with duplicate aliases
         mock_unicode_data = {
@@ -461,10 +455,10 @@ class TestProcessor(unittest.TestCase):
 
         # Mock the parsing functions
         with (
-            patch("glyph_catcher.processor.parse_unicode_data") as mock_parse_unicode,
-            patch("glyph_catcher.processor.parse_name_aliases") as mock_parse_aliases,
-            patch("glyph_catcher.processor.parse_names_list") as mock_parse_names,
-            patch("glyph_catcher.processor.parse_cldr_annotations") as mock_parse_cldr,
+            patch("uniff_gen.processor.parse_unicode_data") as mock_parse_unicode,
+            patch("uniff_gen.processor.parse_name_aliases") as mock_parse_aliases,
+            patch("uniff_gen.processor.parse_names_list") as mock_parse_names,
+            patch("uniff_gen.processor.parse_cldr_annotations") as mock_parse_cldr,
         ):
             # Set up the mock returns with duplicate aliases
             mock_parse_unicode.return_value = mock_unicode_data
@@ -494,7 +488,7 @@ class TestProcessor(unittest.TestCase):
 
     def test_calculate_alias_statistics(self):
         """Test calculating alias statistics."""
-        from glyph_catcher.processor import calculate_alias_statistics
+        from uniff_gen.processor import calculate_alias_statistics
 
         # Test with empty data
         empty_stats = calculate_alias_statistics({})

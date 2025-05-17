@@ -8,15 +8,15 @@ import sys
 import tempfile
 from pathlib import Path
 
-# Add the glyph-catcher package to the Python path
+# Add the uniff-gen package to the Python path
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from glyph_catcher.config import (
+from uniff_gen.config import (
     ALIAS_SOURCE_CLDR,
     ALIAS_SOURCE_FORMAL,
     ALIAS_SOURCE_INFORMATIVE,
 )
-from glyph_catcher.processor import calculate_alias_statistics, process_data_files
+from uniff_gen.processor import calculate_alias_statistics, process_data_files
 
 
 def generate_dataset_with_sources(sources, data_dir):
@@ -36,18 +36,18 @@ def generate_dataset_with_sources(sources, data_dir):
         return sources
 
     # Save the original function
-    from glyph_catcher.processor import get_alias_sources
+    from uniff_gen.processor import get_alias_sources
 
     original_get_alias_sources = get_alias_sources
 
     # Replace with our mock
-    import glyph_catcher.processor
+    import uniff_gen.processor
 
-    glyph_catcher.processor.get_alias_sources = mock_get_alias_sources
+    uniff_gen.processor.get_alias_sources = mock_get_alias_sources
 
     try:
         # Get the paths to the source files
-        source_dir = os.path.expanduser("~/.local/share/glyph-catcher/source-files")
+        source_dir = os.path.expanduser("~/.local/share/uniff-gen/source-files")
         file_paths = {
             "unicode_data": os.path.join(source_dir, "UnicodeData.txt"),
             "name_aliases": os.path.join(source_dir, "NameAliases.txt"),
@@ -61,7 +61,7 @@ def generate_dataset_with_sources(sources, data_dir):
         return unicode_data, aliases_data
     finally:
         # Restore the original function
-        glyph_catcher.processor.get_alias_sources = original_get_alias_sources
+        uniff_gen.processor.get_alias_sources = original_get_alias_sources
 
 
 def print_statistics(stats, title):
@@ -120,7 +120,8 @@ def compare_statistics(before_stats, after_stats):
     print(f"Change in total characters: {total_chars_change}")
     print(f"Change in total aliases: {total_aliases_change} ({total_aliases_pct:.2f}%)")
     print(
-        f"Change in average aliases per character: {avg_aliases_change:.2f} ({avg_aliases_pct:.2f}%)"
+        f"Change in average aliases per character: "
+        f"{avg_aliases_change:.2f} ({avg_aliases_pct:.2f}%)"
     )
     print(f"Change in median aliases per character: {median_aliases_change:.2f}")
 
@@ -137,7 +138,11 @@ def main():
 
         # Generate dataset with all sources
         print("Generating dataset with all alias sources...")
-        all_sources = [ALIAS_SOURCE_FORMAL, ALIAS_SOURCE_INFORMATIVE, ALIAS_SOURCE_CLDR]
+        all_sources = [
+            ALIAS_SOURCE_FORMAL,
+            ALIAS_SOURCE_INFORMATIVE,
+            ALIAS_SOURCE_CLDR,
+        ]
         _, all_aliases = generate_dataset_with_sources(all_sources, all_sources_dir)
 
         # Calculate statistics for all sources
@@ -156,27 +161,46 @@ def main():
         # Compare the statistics
         compare_statistics(all_stats, cldr_stats)
 
-        # We've already got the main statistics, so we'll skip the every-day dataset for now
+        # We've already got the main statistics, so we'll skip the every-day dataset
+        # for now
         print("\nStatistics summary:")
         print("==================")
         print("Using only CLDR annotations results in:")
+
+        # Calculate character difference statistics
+        chars_diff = abs(cldr_stats["total_characters"] - all_stats["total_characters"])
+        chars_pct = abs(chars_diff / all_stats["total_characters"]) * 100
         print(
-            f"- {abs(cldr_stats['total_characters'] - all_stats['total_characters'])} fewer characters with aliases ({abs(cldr_stats['total_characters'] - all_stats['total_characters']) / all_stats['total_characters']:.1%} reduction)"
+            f"- {chars_diff} fewer characters with aliases ({chars_pct:.1f}% reduction)"
+        )
+
+        # Calculate aliases difference statistics
+        aliases_diff = abs(cldr_stats["total_aliases"] - all_stats["total_aliases"])
+        aliases_pct = abs(aliases_diff / all_stats["total_aliases"]) * 100
+        print(f"- {aliases_diff} fewer total aliases ({aliases_pct:.1f}% reduction)")
+
+        # Calculate average aliases per character statistics
+        avg_diff = cldr_stats["avg_aliases_per_char"] - all_stats["avg_aliases_per_char"]
+        avg_pct = (avg_diff / all_stats["avg_aliases_per_char"]) * 100
+        print(
+            f"- {avg_diff:.1f} more aliases per character on average "
+            f"({avg_pct:.1f}% increase)"
+        )
+
+        # Calculate median aliases per character
+        median_diff = (
+            cldr_stats["median_aliases_per_char"] - all_stats["median_aliases_per_char"]
+        )
+        print(f"- {median_diff:.1f} more aliases per character median")
+
+        # Conclusion
+        print(
+            "\nConclusion: Using only CLDR annotations significantly reduces the "
+            "number of characters"
         )
         print(
-            f"- {abs(cldr_stats['total_aliases'] - all_stats['total_aliases'])} fewer total aliases ({abs((cldr_stats['total_aliases'] - all_stats['total_aliases']) / all_stats['total_aliases']) * 100:.1f}% reduction)"
-        )
-        print(
-            f"- {cldr_stats['avg_aliases_per_char'] - all_stats['avg_aliases_per_char']:.1f} more aliases per character on average ({(cldr_stats['avg_aliases_per_char'] - all_stats['avg_aliases_per_char']) / all_stats['avg_aliases_per_char'] * 100:.1f}% increase)"
-        )
-        print(
-            f"- {cldr_stats['median_aliases_per_char'] - all_stats['median_aliases_per_char']:.1f} more aliases per character median"
-        )
-        print(
-            "\nConclusion: Using only CLDR annotations significantly reduces the number of characters"
-        )
-        print(
-            "with aliases, but the remaining characters have more aliases on average, which should"
+            "with aliases, but the remaining characters have more aliases on average, "
+            "which should"
         )
         print("improve search quality for those characters.")
 

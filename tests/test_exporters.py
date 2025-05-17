@@ -7,14 +7,14 @@ import tempfile
 import unittest
 from unittest.mock import MagicMock, patch
 
-from glyph_catcher.exporters import (
+from uniff_gen.exporters import (
     BaseExporter,
     CSVExporter,
     JSONExporter,
     LuaExporter,
     TxtExporter,
 )
-from glyph_catcher.exporters.registry import ExporterRegistry
+from uniff_gen.exporters.registry import ExporterRegistry
 
 
 class TestExporterRegistry(unittest.TestCase):
@@ -147,7 +147,7 @@ class TestCSVExporter(unittest.TestCase):
         result = self.exporter.write({}, self.aliases_data, "dummy.csv")
         self.assertFalse(result)
 
-    @patch("glyph_catcher.exporters.csv_exporter.validate_csv_file")
+    @patch("uniff_gen.exporters.csv_exporter.validate_csv_file")
     def test_verify(self, mock_validate):
         """Test verifying a CSV file."""
         mock_validate.return_value = (True, None)
@@ -241,7 +241,7 @@ class TestJSONExporter(unittest.TestCase):
         result = self.exporter.write({}, self.aliases_data, "dummy.json")
         self.assertFalse(result)
 
-    @patch("glyph_catcher.exporters.json_exporter.validate_json_file")
+    @patch("uniff_gen.exporters.json_exporter.validate_json_file")
     def test_verify(self, mock_validate):
         """Test verifying a JSON file."""
         mock_validate.return_value = (True, None)
@@ -334,7 +334,7 @@ class TestLuaExporter(unittest.TestCase):
         result = self.exporter.write({}, self.aliases_data, "dummy.lua")
         self.assertFalse(result)
 
-    @patch("glyph_catcher.exporters.lua_exporter.validate_lua_file")
+    @patch("uniff_gen.exporters.lua_exporter.validate_lua_file")
     def test_verify(self, mock_validate):
         """Test verifying a Lua file."""
         mock_validate.return_value = (True, None)
@@ -421,7 +421,7 @@ class TestTxtExporter(unittest.TestCase):
         result = self.exporter.write({}, self.aliases_data, "dummy.txt")
         self.assertFalse(result)
 
-    @patch("glyph_catcher.exporters.txt_exporter.validate_txt_file")
+    @patch("uniff_gen.exporters.txt_exporter.validate_txt_file")
     def test_verify(self, mock_validate):
         """Test verifying a TXT file."""
         mock_validate.return_value = (True, None)

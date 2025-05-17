@@ -1,5 +1,5 @@
 """
-Configuration constants and settings for the glyph-catcher package.
+Configuration constants and settings for the uniff-gen package.
 """
 
 import os
@@ -51,7 +51,7 @@ MASTER_DATA_FILE = "unicode_master_data.json"
 # Use XDG_CACHE_HOME if available, otherwise use a temporary directory
 DEFAULT_CACHE_DIR = os.path.join(
     os.environ.get("XDG_CACHE_HOME", os.path.join(os.path.expanduser("~"), ".cache")),
-    "glyph-catcher",
+    "uniff-gen",
 )
 
 # Default data directory for storing the master data file
@@ -59,11 +59,11 @@ DEFAULT_DATA_DIR = os.path.join(
     os.environ.get(
         "XDG_DATA_HOME", os.path.join(os.path.expanduser("~"), ".local", "share")
     ),
-    "glyph-catcher",
+    "uniff-gen",
 )
 
 # Alternative cache location in /tmp for non-persistent storage
-TMP_CACHE_DIR = os.path.join(tempfile.gettempdir(), "glyph-catcher-cache")
+TMP_CACHE_DIR = os.path.join(tempfile.gettempdir(), "uniff-gen-cache")
 
 # User agent for HTTP requests
 USER_AGENT = (

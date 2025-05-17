@@ -1,8 +1,8 @@
-Glyph-Catcher
+uniff-gen
 
 
 
-The glyph-catcher is a simple command to generate unicode data sets for
+The uniff-gen is a simple command to generate unicode data sets for
 applications aimed at helping users find unicode characters. Namely, that
 entails baking in aka's (also known as, or aliases), skipping things like
 control characters and also done curating a real life subset.
@@ -25,7 +25,7 @@ a. Every day
 
     These comprise some 6.6k characters.
     The full list of blocks can be seen in
-    src/glyph-catcher/config.yaml
+    src/uniff-gen/config.yaml
 
     The data set is about 113kb gzipped and 1.3MB otherwise.
 
@@ -47,7 +47,7 @@ b. Complete
 All datasets are available
 
 
-https://github.com/arthur-debert/glyph-catcher/releases/latest/download/unicode.<data-set>.<format>.gz
+https://github.com/arthur-debert/uniff-gen/releases/latest/download/unicode.<data-set>.<format>.gz
 
 Datasets available are every-day" and "complete", and formats  being txt, csv,
 json, and lua.
@@ -74,11 +74,11 @@ save you some time.
 
 a. Install
 
-    glyph-catcher is available on pypi, hence you can
+    uniff-gen is available on pypi, hence you can
 
         --
-            pip install glyph-catcher
-            poetry add glyph-catcher
+            pip install uniff-gen
+            poetry add uniff-gen
 
         -- bash
 

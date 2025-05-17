@@ -1,5 +1,5 @@
 """
-Command-line interface for the glyph-catcher package.
+Command-line interface for the uniff-gen package.
 
 This module handles all CLI-related functionality including argument parsing,
 command definitions, and usage information.
@@ -22,7 +22,7 @@ from .types import ExportOptions, FetchOptions
 @click.group()
 def cli():
     """
-    Glyph-catcher: Download and process Unicode character data.
+    uniff-gen: Download and process Unicode character data.
 
     This tool downloads Unicode character data from various sources,
     processes it, and generates output in different formats for use
@@ -121,15 +121,15 @@ def generate(
     by using the --unicode-blocks option. For example:
 
     \b
-    glyph-catcher generate --unicode-blocks "Basic Latin" \\
+    uniff-gen generate --unicode-blocks "Basic Latin" \\
         --unicode-blocks "Greek"
 
     You can also select a predefined dataset using the --dataset option:
 
     \b
-    glyph-catcher generate --dataset every-day  # Default, common
+    uniff-gen generate --dataset every-day  # Default, common
                                                # (6618 characters)
-    glyph-catcher generate --dataset complete   # Includes all Unicode blocks
+    uniff-gen generate --dataset complete   # Includes all Unicode blocks
     """
     # Create options objects
     fetch_options = FetchOptions(
@@ -185,7 +185,7 @@ def info():
 
     Shows details about the available output formats and their uses.
     """
-    click.echo("Glyph-catcher: Unicode Data Format Information")
+    click.echo("uniff-gen: Unicode Data Format Information")
     click.echo("==============================================")
     click.echo("")
     click.echo("Available output formats:")
@@ -227,7 +227,7 @@ def info():
     click.echo("  - Emoticons")
     click.echo("")
     click.echo("Example:")
-    click.echo('  glyph-catcher generate --unicode-blocks "Basic Latin" \\')
+    click.echo('  uniff-gen generate --unicode-blocks "Basic Latin" \\')
     click.echo('  --unicode-blocks "Emoticons"')
 
 
@@ -384,7 +384,7 @@ def list_blocks():
         "Use these block names with the --unicode-blocks option in the generate command."
     )
     click.echo("Example:")
-    click.echo('  glyph-catcher generate --unicode-blocks "Basic Latin" \\')
+    click.echo('  uniff-gen generate --unicode-blocks "Basic Latin" \\')
     click.echo('  --unicode-blocks "Arrows"')
 
 

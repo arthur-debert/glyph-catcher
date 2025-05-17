@@ -7,13 +7,13 @@ import os
 import tempfile
 import unittest
 
-from glyph_catcher.config import MASTER_DATA_FILE
-from glyph_catcher.processor import (
+from uniff_gen.config import MASTER_DATA_FILE
+from uniff_gen.processor import (
     get_master_file_path,
     load_master_data_file,
     save_master_data_file,
 )
-from glyph_catcher.types import FetchOptions
+from uniff_gen.types import FetchOptions
 
 
 class TestMasterDataFile(unittest.TestCase):

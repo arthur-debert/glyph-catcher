@@ -47,7 +47,7 @@ echo "Output directory: $OUTPUT_DIR"
 echo "Compress: $COMPRESS"
 
 # Build the command
-CMD="poetry run glyph-catcher generate --format $FORMAT --dataset $DATASET --output-dir $OUTPUT_DIR"
+CMD="poetry run uniff-gen generate --format $FORMAT --dataset $DATASET --output-dir $OUTPUT_DIR"
 
 # Add compression flag if needed
 if [ "$COMPRESS" = true ]; then

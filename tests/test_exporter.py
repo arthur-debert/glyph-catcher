@@ -5,12 +5,12 @@ Tests for the exporter module.
 import unittest
 from unittest.mock import MagicMock, patch
 
-from glyph_catcher.exporter import (
+from uniff_gen.exporter import (
     export_data,
     save_source_files,
 )
-from glyph_catcher.exporters import BaseExporter
-from glyph_catcher.types import ExportOptions
+from uniff_gen.exporters import BaseExporter
+from uniff_gen.types import ExportOptions
 
 
 class TestExporter(unittest.TestCase):
@@ -42,7 +42,7 @@ class TestExporter(unittest.TestCase):
 
     # The individual exporter tests have been moved to test_exporters.py
 
-    @patch("glyph_catcher.exporters.registry.get_exporter")
+    @patch("uniff_gen.exporters.registry.get_exporter")
     def test_export_data_csv(self, mock_get_exporter):
         """Test exporting data to CSV format."""
         # Create a mock exporter
@@ -67,8 +67,8 @@ class TestExporter(unittest.TestCase):
         )
         mock_exporter.verify.assert_called_once_with("/tmp/unicode.every-day.csv")
 
-    @patch("glyph_catcher.exporters.registry.get_supported_formats")
-    @patch("glyph_catcher.exporters.registry.get_exporter")
+    @patch("uniff_gen.exporters.registry.get_supported_formats")
+    @patch("uniff_gen.exporters.registry.get_exporter")
     def test_export_data_all(self, mock_get_exporter, mock_get_supported_formats):
         """Test exporting data to all formats."""
         # Set up the mock to return a list of supported formats
@@ -102,7 +102,7 @@ class TestExporter(unittest.TestCase):
         self.assertEqual(mock_exporter.write.call_count, 4)
         self.assertEqual(mock_exporter.verify.call_count, 4)
 
-    @patch("glyph_catcher.exporters.registry.get_exporter")
+    @patch("uniff_gen.exporters.registry.get_exporter")
     def test_export_data_write_failure(self, mock_get_exporter):
         """Test exporting data when writing fails."""
         # Create a mock exporter that fails to write
@@ -126,7 +126,7 @@ class TestExporter(unittest.TestCase):
         )
         mock_exporter.verify.assert_not_called()
 
-    @patch("glyph_catcher.exporters.registry.get_exporter")
+    @patch("uniff_gen.exporters.registry.get_exporter")
     def test_export_data_with_validation(self, mock_get_exporter):
         """Test exporting data with validation."""
         # Create a mock exporter
@@ -147,7 +147,7 @@ class TestExporter(unittest.TestCase):
         # Check that validation was called
         mock_exporter.verify.assert_called_once_with("/tmp/unicode.every-day.csv")
 
-    @patch("glyph_catcher.exporters.registry.get_exporter")
+    @patch("uniff_gen.exporters.registry.get_exporter")
     def test_export_data_with_validation_failure(self, mock_get_exporter):
         """Test exporting data with validation failure."""
         # Create a mock exporter
@@ -169,7 +169,7 @@ class TestExporter(unittest.TestCase):
         # Check that validation was called
         mock_exporter.verify.assert_called_once_with("/tmp/unicode.every-day.csv")
 
-    @patch("glyph_catcher.exporters.registry.get_exporter")
+    @patch("uniff_gen.exporters.registry.get_exporter")
     def test_export_data_with_compression_skips_validation(self, mock_get_exporter):
         """Test that compressed files skip validation."""
         # Create a mock exporter
@@ -186,7 +186,7 @@ class TestExporter(unittest.TestCase):
 
         # Mock the compress_file function to avoid actual file operations
         with (
-            patch("glyph_catcher.exporter.compress_file"),
+            patch("uniff_gen.exporter.compress_file"),
             patch("os.remove"),  # Mock os.remove to avoid removing temp files
         ):
             result = export_data(self.unicode_data, self.aliases_data, options)

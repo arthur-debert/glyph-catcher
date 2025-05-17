@@ -1,8 +1,8 @@
 import os
 import tempfile
 
-from glyph_catcher.exporter import compress_file, decompress_file, export_data
-from glyph_catcher.types import ExportOptions
+from uniff_gen.exporter import compress_file, decompress_file, export_data
+from uniff_gen.types import ExportOptions
 
 
 def test_compress_decompress_file():

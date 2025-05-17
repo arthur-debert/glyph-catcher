@@ -1,3 +1,3 @@
 """
-Tests for the glyph-catcher package.
+Tests for the uniff-gen package.
 """
