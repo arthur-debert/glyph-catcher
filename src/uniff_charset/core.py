@@ -8,12 +8,14 @@ separated from CLI-specific code.
 import inspect
 import os
 
+from uniff_core.progress import ProgressDisplay
+from uniff_core.types import FetchOptions
+
 from .config import DEFAULT_CACHE_DIR, DEFAULT_DATA_DIR
 from .exporter import export_data, save_source_files
 from .fetcher import fetch_all_data_files
 from .processor import process_data_files, save_master_data_file
-from .progress import ProgressDisplay
-from .types import ExportOptions, FetchOptions
+from .types import ExportOptions
 
 # Progress message constants
 PROGRESS_FETCHING_DATA = "Fetching Data"

@@ -2,7 +2,7 @@
 # Script to export datasets to the tmp directory
 # This script is used by the release workflow
 
-set -e  # Exit on error
+set -e # Exit on error
 
 # Default output directory
 OUTPUT_DIR="tmp"
@@ -16,28 +16,28 @@ COMPRESS=true
 # Process arguments
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --dataset)
-      DATASET="$2"
-      shift 2
-      ;;
-    --format)
-      FORMAT="$2"
-      shift 2
-      ;;
-    --no-compress)
-      COMPRESS=false
-      shift
-      ;;
-    --output-dir)
-      OUTPUT_DIR="$2"
-      mkdir -p "$OUTPUT_DIR"
-      shift 2
-      ;;
-    *)
-      echo "Unknown option: $1"
-      echo "Usage: $0 [--dataset <dataset>] [--format <format>] [--no-compress] [--output-dir <dir>]"
-      exit 1
-      ;;
+  --dataset)
+    DATASET="$2"
+    shift 2
+    ;;
+  --format)
+    FORMAT="$2"
+    shift 2
+    ;;
+  --no-compress)
+    COMPRESS=false
+    shift
+    ;;
+  --output-dir)
+    OUTPUT_DIR="$2"
+    mkdir -p "$OUTPUT_DIR"
+    shift 2
+    ;;
+  *)
+    echo "Unknown option: $1"
+    echo "Usage: $0 [--dataset <dataset>] [--format <format>] [--no-compress] [--output-dir <dir>]"
+    exit 1
+    ;;
   esac
 done
 
@@ -47,7 +47,7 @@ echo "Output directory: $OUTPUT_DIR"
 echo "Compress: $COMPRESS"
 
 # Build the command
-CMD="poetry run uniff-gen generate --format $FORMAT --dataset $DATASET --output-dir $OUTPUT_DIR"
+CMD="poetry run uniff-charset generate --format $FORMAT --dataset $DATASET --output-dir $OUTPUT_DIR"
 
 # Add compression flag if needed
 if [ "$COMPRESS" = true ]; then
