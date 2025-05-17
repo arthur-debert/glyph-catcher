@@ -1,0 +1,99 @@
+unicode_codepoint,unicode_name,unicode_utf8,sequence,category,description
+U+2192,RIGHTWARDS ARROW,→,->,arrows,Right Arrow
+U+21D2,RIGHTWARDS DOUBLE ARROW,⇒,=>,arrows,Right Double Arrow
+U+2190,LEFTWARDS ARROW,←,<-,arrows,Left Arrow
+U+21D0,LEFTWARDS DOUBLE ARROW,⇐,<=,arrows,Left Double Arrow
+U+2194,LEFT RIGHT ARROW,↔,<->,arrows,Bidirectional Arrow
+U+21D4,LEFT RIGHT DOUBLE ARROW,⇔,<=>,arrows,Bidirectional Double Arrow
+U+27F6,LONG RIGHTWARDS ARROW,⟶,-->,arrows,Long Right Arrow
+U+27F5,LONG LEFTWARDS ARROW,⟵,<--,arrows,Long Left Arrow
+U+21A0,RIGHTWARDS TWO HEADED ARROW,↠,->>,arrows,Right Arrow with Tail
+U+219E,LEFTWARDS TWO HEADED ARROW,↞,<<-,arrows,Left Arrow with Tail
+U+27FE,LONG RIGHTWARDS ARROW FROM BAR,⟾,-->>|,arrows,Long Right Arrow From Bar
+U+27FD,LONG LEFTWARDS ARROW TO BAR,⟽,|<<--,arrows,Long Left Arrow To Bar
+U+219D,RIGHTWARDS WAVE ARROW,↝,~>,arrows,Wavy Right Arrow
+U+219C,LEFTWARDS WAVE ARROW,↜,<~,arrows,Wavy Left Arrow
+U+27F9,LONG RIGHTWARDS DOUBLE ARROW,⟹,==>,arrows,Long Right Double Arrow
+U+27F8,LONG LEFTWARDS DOUBLE ARROW,⟸,<==,arrows,Long Left Double Arrow
+U+27FA,LONG LEFT RIGHT DOUBLE ARROW,⟺,<==>,arrows,Long Left Right Double Arrow
+U+27FC,LONG RIGHTWARDS ARROW FROM BAR,⟼,|->,arrows,Long Right Arrow From Bar
+U+2191,UPWARDS ARROW,↑,^|,arrows,Upwards Arrow
+U+2193,DOWNWARDS ARROW,↓,v|,arrows,Downwards Arrow
+U+2195,UP DOWN ARROW,↕,^v,arrows,Up Down Arrow
+U+21C8,UPWARDS PAIRED ARROWS,⇈,^^,arrows,Upwards Paired Arrows
+U+21CA,DOWNWARDS PAIRED ARROWS,⇊,vv,arrows,Downwards Paired Arrows
+U+21E4,LEFTWARDS ARROW TO BAR,⇤,<||,arrows,Left Arrow To Bar
+U+21E5,RIGHTWARDS ARROW FROM BAR,⇥,||>,arrows,Right Arrow From Bar
+U+21A4,LEFTWARDS ARROW FROM BAR,↤,"<|,<-|",arrows,Left Arrow From Bar
+U+21A6,RIGHTWARDS ARROW FROM BAR,↦,"|>,|->",arrows,Right Arrow From Bar
+U+2260,NOT EQUAL TO,≠,"!=,<>,=/=",comparison,Not Equal To
+U+2261,IDENTICAL TO,≡,==,comparison,Identical To
+U+2264,LESS-THAN OR EQUAL TO,≤,<=,comparison,Less Than or Equal To
+U+2265,GREATER-THAN OR EQUAL TO,≥,>=,comparison,Greater Than or Equal To
+U+2248,ALMOST EQUAL TO,≈,"~=,~~",comparison,Almost Equal To
+U+2249,NOT ALMOST EQUAL TO,≉,"!~=,!~~",comparison,Not Almost Equal To
+U+226A,MUCH LESS-THAN,≪,<<<,comparison,Very Much Less Than
+U+226B,MUCH GREATER-THAN,≫,>>>,comparison,Very Much Greater Than
+U+00B1,PLUS-MINUS SIGN,±,+-,math,Plus-Minus Sign
+U+2213,MINUS-OR-PLUS SIGN,∓,-+,math,Minus-Plus Sign
+U+00D7,MULTIPLICATION SIGN,×,**,math,Multiplication Sign
+U+22C6,STAR OPERATOR,⋆,***,math,Asterisk Operator
+U+00F7,DIVISION SIGN,÷,//,math,Division Sign
+U+221A,SQUARE ROOT,√,sqrt,math,Square Root
+U+221E,INFINITY,∞,inf,math,Infinity
+U+2211,N-ARY SUMMATION,∑,sum,math,Summation
+U+220F,N-ARY PRODUCT,∏,prod,math,Product
+U+222B,INTEGRAL,∫,integral,math,Integral
+U+2202,PARTIAL DIFFERENTIAL,∂,partial,math,Partial Differential
+U+2207,NABLA,∇,"nabla,grad",math,Nabla
+U+221B,CUBE ROOT,∛,cbrt,math,Cube Root
+U+00B2,SUPERSCRIPT TWO,²,^2,math,Superscript Two
+U+00B3,SUPERSCRIPT THREE,³,^3,math,Superscript Three
+U+207F,SUPERSCRIPT LATIN SMALL LETTER N,ⁿ,^n,math,Superscript Latin Small Letter N
+U+2080,SUBSCRIPT ZERO,₀,_0,math,Subscript Zero
+U+2081,SUBSCRIPT ONE,₁,_1,math,Subscript One
+U+2082,SUBSCRIPT TWO,₂,_2,math,Subscript Two
+U+2083,SUBSCRIPT THREE,₃,_3,math,Subscript Three
+U+2084,SUBSCRIPT FOUR,₄,_4,math,Subscript Four
+U+2085,SUBSCRIPT FIVE,₅,_5,math,Subscript Five
+U+2086,SUBSCRIPT SIX,₆,_6,math,Subscript Six
+U+2087,SUBSCRIPT SEVEN,₇,_7,math,Subscript Seven
+U+2088,SUBSCRIPT EIGHT,₈,_8,math,Subscript Eight
+U+2089,SUBSCRIPT NINE,₉,_9,math,Subscript Nine
+U+00BD,VULGAR FRACTION ONE HALF,½,1/2,math,Vulgar Fraction One Half
+U+2153,VULGAR FRACTION ONE THIRD,⅓,1/3,math,Vulgar Fraction One Third
+U+2154,VULGAR FRACTION TWO THIRDS,⅔,2/3,math,Vulgar Fraction Two Thirds
+U+00BC,VULGAR FRACTION ONE QUARTER,¼,1/4,math,Vulgar Fraction One Quarter
+U+00BE,VULGAR FRACTION THREE QUARTERS,¾,3/4,math,Vulgar Fraction Three Quarters
+U+215B,VULGAR FRACTION ONE EIGHTH,⅛,1/8,math,Vulgar Fraction One Eighth
+U+215C,VULGAR FRACTION THREE EIGHTHS,⅜,3/8,math,Vulgar Fraction Three Eighths
+U+215D,VULGAR FRACTION FIVE EIGHTHS,⅝,5/8,math,Vulgar Fraction Five Eighths
+U+215E,VULGAR FRACTION SEVEN EIGHTHS,⅞,7/8,math,Vulgar Fraction Seven Eighths
+U+03B1,GREEK SMALL LETTER ALPHA,α,alpha,greek,Greek Small Letter Alpha
+U+03B2,GREEK SMALL LETTER BETA,β,beta,greek,Greek Small Letter Beta
+U+03B3,GREEK SMALL LETTER GAMMA,γ,gamma,greek,Greek Small Letter Gamma
+U+03B4,GREEK SMALL LETTER DELTA,δ,delta,greek,Greek Small Letter Delta
+U+03B5,GREEK SMALL LETTER EPSILON,ε,epsilon,greek,Greek Small Letter Epsilon
+U+03B6,GREEK SMALL LETTER ZETA,ζ,zeta,greek,Greek Small Letter Zeta
+U+03B7,GREEK SMALL LETTER ETA,η,eta,greek,Greek Small Letter Eta
+U+03B8,GREEK SMALL LETTER THETA,θ,theta,greek,Greek Small Letter Theta
+U+03B9,GREEK SMALL LETTER IOTA,ι,iota,greek,Greek Small Letter Iota
+U+03BA,GREEK SMALL LETTER KAPPA,κ,kappa,greek,Greek Small Letter Kappa
+U+03BB,GREEK SMALL LETTER LAMBDA,λ,lambda,greek,Greek Small Letter Lambda
+U+03BC,GREEK SMALL LETTER MU,μ,mu,greek,Greek Small Letter Mu
+U+03BD,GREEK SMALL LETTER NU,ν,nu,greek,Greek Small Letter Nu
+U+03BE,GREEK SMALL LETTER XI,ξ,xi,greek,Greek Small Letter Xi
+U+03BF,GREEK SMALL LETTER OMICRON,ο,omicron,greek,Greek Small Letter Omicron
+U+03C0,GREEK SMALL LETTER PI,π,pi,greek,Greek Small Letter Pi
+U+03C1,GREEK SMALL LETTER RHO,ρ,rho,greek,Greek Small Letter Rho
+U+03C3,GREEK SMALL LETTER SIGMA,σ,sigma,greek,Greek Small Letter Sigma
+U+03C4,GREEK SMALL LETTER TAU,τ,tau,greek,Greek Small Letter Tau
+U+03C5,GREEK SMALL LETTER UPSILON,υ,upsilon,greek,Greek Small Letter Upsilon
+U+03C6,GREEK SMALL LETTER PHI,φ,phi,greek,Greek Small Letter Phi
+U+03C7,GREEK SMALL LETTER CHI,χ,chi,greek,Greek Small Letter Chi
+U+03C8,GREEK SMALL LETTER PSI,ψ,psi,greek,Greek Small Letter Psi
+U+03C9,GREEK SMALL LETTER OMEGA,ω,omega,greek,Greek Small Letter Omega
+U+0391,GREEK CAPITAL LETTER ALPHA,Α,Alpha,greek,Greek Capital Letter Alpha
+U+0392,GREEK CAPITAL LETTER BETA,Β,Beta,greek,Greek Capital Letter Beta
+U+0393,GREEK CAPITAL LETTER GAMMA,Γ,Gamma,greek,Greek Capital Letter Gamma
+U+0394,GREEK CAPITAL LETTER DELTA,Δ,Delta,greek,Greek Capital Letter Delta

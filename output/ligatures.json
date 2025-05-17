@@ -1,0 +1,483 @@
+[
+  {
+    "unicode_codepoint": "U+2192",
+    "unicode_name": "RIGHTWARDS ARROW",
+    "unicode_utf8": "→",
+    "sequences": ["->"],
+    "category": "arrows",
+    "description": "Right Arrow"
+  },
+  {
+    "unicode_codepoint": "U+21D2",
+    "unicode_name": "RIGHTWARDS DOUBLE ARROW",
+    "unicode_utf8": "⇒",
+    "sequences": ["=>"],
+    "category": "arrows",
+    "description": "Right Double Arrow"
+  },
+  {
+    "unicode_codepoint": "U+2190",
+    "unicode_name": "LEFTWARDS ARROW",
+    "unicode_utf8": "←",
+    "sequences": ["<-"],
+    "category": "arrows",
+    "description": "Left Arrow"
+  },
+  {
+    "unicode_codepoint": "U+21D0",
+    "unicode_name": "LEFTWARDS DOUBLE ARROW",
+    "unicode_utf8": "⇐",
+    "sequences": ["<="],
+    "category": "arrows",
+    "description": "Left Double Arrow"
+  },
+  {
+    "unicode_codepoint": "U+2194",
+    "unicode_name": "LEFT RIGHT ARROW",
+    "unicode_utf8": "↔",
+    "sequences": ["<->"],
+    "category": "arrows",
+    "description": "Bidirectional Arrow"
+  },
+  {
+    "unicode_codepoint": "U+21D4",
+    "unicode_name": "LEFT RIGHT DOUBLE ARROW",
+    "unicode_utf8": "⇔",
+    "sequences": ["<=>"],
+    "category": "arrows",
+    "description": "Bidirectional Double Arrow"
+  },
+  {
+    "unicode_codepoint": "U+27F6",
+    "unicode_name": "LONG RIGHTWARDS ARROW",
+    "unicode_utf8": "⟶",
+    "sequences": ["-->"],
+    "category": "arrows",
+    "description": "Long Right Arrow"
+  },
+  {
+    "unicode_codepoint": "U+27F5",
+    "unicode_name": "LONG LEFTWARDS ARROW",
+    "unicode_utf8": "⟵",
+    "sequences": ["<--"],
+    "category": "arrows",
+    "description": "Long Left Arrow"
+  },
+  {
+    "unicode_codepoint": "U+21A0",
+    "unicode_name": "RIGHTWARDS TWO HEADED ARROW",
+    "unicode_utf8": "↠",
+    "sequences": ["->>"],
+    "category": "arrows",
+    "description": "Right Arrow with Tail"
+  },
+  {
+    "unicode_codepoint": "U+219E",
+    "unicode_name": "LEFTWARDS TWO HEADED ARROW",
+    "unicode_utf8": "↞",
+    "sequences": ["<<-"],
+    "category": "arrows",
+    "description": "Left Arrow with Tail"
+  },
+  {
+    "unicode_codepoint": "U+219D",
+    "unicode_name": "RIGHTWARDS WAVE ARROW",
+    "unicode_utf8": "↝",
+    "sequences": ["~>"],
+    "category": "arrows",
+    "description": "Wavy Right Arrow"
+  },
+  {
+    "unicode_codepoint": "U+219C",
+    "unicode_name": "LEFTWARDS WAVE ARROW",
+    "unicode_utf8": "↜",
+    "sequences": ["<~"],
+    "category": "arrows",
+    "description": "Wavy Left Arrow"
+  },
+  {
+    "unicode_codepoint": "U+2260",
+    "unicode_name": "NOT EQUAL TO",
+    "unicode_utf8": "≠",
+    "sequences": ["!=", "<>"],
+    "category": "comparison",
+    "description": "Not Equal To"
+  },
+  {
+    "unicode_codepoint": "U+2261",
+    "unicode_name": "IDENTICAL TO",
+    "unicode_utf8": "≡",
+    "sequences": ["=="],
+    "category": "comparison",
+    "description": "Identical To"
+  },
+  {
+    "unicode_codepoint": "U+2264",
+    "unicode_name": "LESS-THAN OR EQUAL TO",
+    "unicode_utf8": "≤",
+    "sequences": ["<="],
+    "category": "comparison",
+    "description": "Less Than or Equal To"
+  },
+  {
+    "unicode_codepoint": "U+2265",
+    "unicode_name": "GREATER-THAN OR EQUAL TO",
+    "unicode_utf8": "≥",
+    "sequences": [">="],
+    "category": "comparison",
+    "description": "Greater Than or Equal To"
+  },
+  {
+    "unicode_codepoint": "U+00B1",
+    "unicode_name": "PLUS-MINUS SIGN",
+    "unicode_utf8": "±",
+    "sequences": ["+-"],
+    "category": "math",
+    "description": "Plus-Minus Sign"
+  },
+  {
+    "unicode_codepoint": "U+2213",
+    "unicode_name": "MINUS-OR-PLUS SIGN",
+    "unicode_utf8": "∓",
+    "sequences": ["-+"],
+    "category": "math",
+    "description": "Minus-Plus Sign"
+  },
+  {
+    "unicode_codepoint": "U+00D7",
+    "unicode_name": "MULTIPLICATION SIGN",
+    "unicode_utf8": "×",
+    "sequences": ["**"],
+    "category": "math",
+    "description": "Multiplication Sign"
+  },
+  {
+    "unicode_codepoint": "U+22C6",
+    "unicode_name": "STAR OPERATOR",
+    "unicode_utf8": "⋆",
+    "sequences": ["***"],
+    "category": "math",
+    "description": "Asterisk Operator"
+  },
+  {
+    "unicode_codepoint": "U+00F7",
+    "unicode_name": "DIVISION SIGN",
+    "unicode_utf8": "÷",
+    "sequences": ["//"],
+    "category": "math",
+    "description": "Division Sign"
+  },
+  {
+    "unicode_codepoint": "U+221A",
+    "unicode_name": "SQUARE ROOT",
+    "unicode_utf8": "√",
+    "sequences": ["sqrt"],
+    "category": "math",
+    "description": "Square Root"
+  },
+  {
+    "unicode_codepoint": "U+221E",
+    "unicode_name": "INFINITY",
+    "unicode_utf8": "∞",
+    "sequences": ["inf"],
+    "category": "math",
+    "description": "Infinity"
+  },
+  {
+    "unicode_codepoint": "U+2211",
+    "unicode_name": "N-ARY SUMMATION",
+    "unicode_utf8": "∑",
+    "sequences": ["sum"],
+    "category": "math",
+    "description": "Summation"
+  },
+  {
+    "unicode_codepoint": "U+220F",
+    "unicode_name": "N-ARY PRODUCT",
+    "unicode_utf8": "∏",
+    "sequences": ["prod"],
+    "category": "math",
+    "description": "Product"
+  },
+  {
+    "unicode_codepoint": "U+2227",
+    "unicode_name": "LOGICAL AND",
+    "unicode_utf8": "∧",
+    "sequences": ["&&"],
+    "category": "logic",
+    "description": "Logical AND"
+  },
+  {
+    "unicode_codepoint": "U+2228",
+    "unicode_name": "LOGICAL OR",
+    "unicode_utf8": "∨",
+    "sequences": ["||"],
+    "category": "logic",
+    "description": "Logical OR"
+  },
+  {
+    "unicode_codepoint": "U+00AC",
+    "unicode_name": "NOT SIGN",
+    "unicode_utf8": "¬",
+    "sequences": ["!"],
+    "category": "logic",
+    "description": "Logical NOT"
+  },
+  {
+    "unicode_codepoint": "U+2200",
+    "unicode_name": "FOR ALL",
+    "unicode_utf8": "∀",
+    "sequences": ["for all"],
+    "category": "logic",
+    "description": "Universal Quantifier"
+  },
+  {
+    "unicode_codepoint": "U+2203",
+    "unicode_name": "THERE EXISTS",
+    "unicode_utf8": "∃",
+    "sequences": ["exists"],
+    "category": "logic",
+    "description": "Existential Quantifier"
+  },
+  {
+    "unicode_codepoint": "U+2295",
+    "unicode_name": "CIRCLED PLUS",
+    "unicode_utf8": "⊕",
+    "sequences": ["xor"],
+    "category": "logic",
+    "description": "Exclusive OR"
+  },
+  {
+    "unicode_codepoint": "U+22A4",
+    "unicode_name": "DOWN TACK",
+    "unicode_utf8": "⊤",
+    "sequences": ["\\top"],
+    "category": "logic",
+    "description": "Logical True"
+  },
+  {
+    "unicode_codepoint": "U+22A5",
+    "unicode_name": "UP TACK",
+    "unicode_utf8": "⊥",
+    "sequences": ["\\bottom"],
+    "category": "logic",
+    "description": "Logical False"
+  },
+  {
+    "unicode_codepoint": "U+2208",
+    "unicode_name": "ELEMENT OF",
+    "unicode_utf8": "∈",
+    "sequences": ["in"],
+    "category": "sets",
+    "description": "Element Of"
+  },
+  {
+    "unicode_codepoint": "U+2209",
+    "unicode_name": "NOT AN ELEMENT OF",
+    "unicode_utf8": "∉",
+    "sequences": ["not in"],
+    "category": "sets",
+    "description": "Not an Element Of"
+  },
+  {
+    "unicode_codepoint": "U+222A",
+    "unicode_name": "UNION",
+    "unicode_utf8": "∪",
+    "sequences": ["union"],
+    "category": "sets",
+    "description": "Union"
+  },
+  {
+    "unicode_codepoint": "U+2229",
+    "unicode_name": "INTERSECTION",
+    "unicode_utf8": "∩",
+    "sequences": ["intersection"],
+    "category": "sets",
+    "description": "Intersection"
+  },
+  {
+    "unicode_codepoint": "U+2282",
+    "unicode_name": "SUBSET OF",
+    "unicode_utf8": "⊂",
+    "sequences": ["subset"],
+    "category": "sets",
+    "description": "Subset Of"
+  },
+  {
+    "unicode_codepoint": "U+2283",
+    "unicode_name": "SUPERSET OF",
+    "unicode_utf8": "⊃",
+    "sequences": ["superset"],
+    "category": "sets",
+    "description": "Superset Of"
+  },
+  {
+    "unicode_codepoint": "U+2286",
+    "unicode_name": "SUBSET OF OR EQUAL TO",
+    "unicode_utf8": "⊆",
+    "sequences": ["subset="],
+    "category": "sets",
+    "description": "Subset Of or Equal To"
+  },
+  {
+    "unicode_codepoint": "U+2287",
+    "unicode_name": "SUPERSET OF OR EQUAL TO",
+    "unicode_utf8": "⊇",
+    "sequences": ["superset="],
+    "category": "sets",
+    "description": "Superset Of or Equal To"
+  },
+  {
+    "unicode_codepoint": "U+2205",
+    "unicode_name": "EMPTY SET",
+    "unicode_utf8": "∅",
+    "sequences": ["emptyset"],
+    "category": "sets",
+    "description": "Empty Set"
+  },
+  {
+    "unicode_codepoint": "U+2026",
+    "unicode_name": "HORIZONTAL ELLIPSIS",
+    "unicode_utf8": "…",
+    "sequences": ["..."],
+    "category": "punctuation",
+    "description": "Ellipsis"
+  },
+  {
+    "unicode_codepoint": "U+2013",
+    "unicode_name": "EN DASH",
+    "unicode_utf8": "–",
+    "sequences": ["--"],
+    "category": "punctuation",
+    "description": "En Dash"
+  },
+  {
+    "unicode_codepoint": "U+2014",
+    "unicode_name": "EM DASH",
+    "unicode_utf8": "—",
+    "sequences": ["---"],
+    "category": "punctuation",
+    "description": "Em Dash"
+  },
+  {
+    "unicode_codepoint": "U+2237",
+    "unicode_name": "PROPORTION",
+    "unicode_utf8": "∷",
+    "sequences": ["::"],
+    "category": "punctuation",
+    "description": "Proportion"
+  },
+  {
+    "unicode_codepoint": "U+00AB",
+    "unicode_name": "LEFT-POINTING DOUBLE ANGLE QUOTATION MARK",
+    "unicode_utf8": "«",
+    "sequences": ["<<"],
+    "category": "punctuation",
+    "description": "Left-Pointing Double Angle Quotation Mark"
+  },
+  {
+    "unicode_codepoint": "U+00BB",
+    "unicode_name": "RIGHT-POINTING DOUBLE ANGLE QUOTATION MARK",
+    "unicode_utf8": "»",
+    "sequences": [">>"],
+    "category": "punctuation",
+    "description": "Right-Pointing Double Angle Quotation Mark"
+  },
+  {
+    "unicode_codepoint": "U+201C",
+    "unicode_name": "LEFT DOUBLE QUOTATION MARK",
+    "unicode_utf8": ",",
+    "sequences": [
+      "punctuation",
+      "Quotation Mark\nU+2018",
+      "LEFT SINGLE QUOTATION MARK",
+      "'",
+      "'",
+      "'",
+      "punctuation",
+      "Apostrophe\nU+20AC",
+      "EURO SIGN",
+      "€",
+      "EUR",
+      "currency",
+      "Euro Sign\nU+00A3",
+      "POUND SIGN",
+      "£",
+      "GBP",
+      "currency",
+      "Pound Sign\nU+00A5",
+      "YEN SIGN",
+      "¥",
+      "JPY",
+      "currency",
+      "Yen Sign\nU+0024",
+      "DOLLAR SIGN",
+      "$",
+      "USD",
+      "currency",
+      "Dollar Sign\nU+00A2",
+      "CENT SIGN",
+      "¢",
+      "cent",
+      "currency",
+      "Cent Sign\nU+20BF",
+      "BITCOIN SIGN",
+      "₿",
+      "BTC",
+      "currency",
+      "Bitcoin Sign\nU+00A9",
+      "COPYRIGHT SIGN",
+      "©",
+      "copyright",
+      "common_symbols",
+      "Copyright Sign\nU+00AE",
+      "REGISTERED SIGN",
+      "®",
+      "registered",
+      "common_symbols",
+      "Registered Sign\nU+2122",
+      "TRADE MARK SIGN",
+      "™",
+      "trademark",
+      "common_symbols",
+      "Trademark Sign\nU+00B0",
+      "DEGREE SIGN",
+      "°",
+      "degree",
+      "common_symbols",
+      "Degree Sign\nU+00B5",
+      "MICRO SIGN",
+      "µ",
+      "micro",
+      "common_symbols",
+      "Micro Sign\nU+2022",
+      "BULLET",
+      "•",
+      "bullet",
+      "common_symbols",
+      "Bullet\nU+00B6",
+      "PILCROW SIGN",
+      "¶",
+      "paragraph",
+      "common_symbols",
+      "Pilcrow Sign\nU+00A7",
+      "SECTION SIGN",
+      "§",
+      "section",
+      "common_symbols",
+      "Section Sign\nU+2713",
+      "CHECK MARK",
+      "✓",
+      "check",
+      "common_symbols",
+      "Check Mark\nU+2717",
+      "BALLOT X",
+      "✗",
+      "cross",
+      "common_symbols",
+      "Ballot X"
+    ],
+    "category": null,
+    "description": null
+  }
+]
