@@ -60,18 +60,19 @@ def parse_unicode_data(filename: str) -> dict[str, dict[str, str]]:
             for line in f:
                 fields = line.strip().split(";")
                 if len(fields) >= 3:
-                    code_point_hex = fields[0]
-                    name = fields[1]
-                    category = fields[2]
-
-                    if name.startswith("<") and name.endswith(", First>"):
-                        continue
-                    if name.startswith("<") and name.endswith(", Last>"):
-                        continue
-
                     try:
-                        char_obj = chr(int(code_point_hex, 16))
-                        block = get_unicode_block(int(code_point_hex, 16))
+                        code_point_int = int(fields[0], 16)
+                        name = fields[1]
+                        category = fields[2]
+
+                        if name.startswith("<") and name.endswith(", First>"):
+                            continue
+                        if name.startswith("<") and name.endswith(", Last>"):
+                            continue
+
+                        code_point_hex = format(code_point_int, "04X")
+                        char_obj = chr(code_point_int)
+                        block = get_unicode_block(code_point_int)
                         data[code_point_hex] = {
                             "name": name,
                             "category": category,
@@ -82,17 +83,17 @@ def parse_unicode_data(filename: str) -> dict[str, dict[str, str]]:
                             f"Parsed character {code_point_hex}: {name}"
                             f"({category}) in block {block}"
                         )
-                    except ValueError:
+                    except ValueError as e:
                         logger.debug(
-                            f"Skipping invalid code point: {code_point_hex} - {name}"
+                            f"Skipping invalid code point: {fields[0]} - {name}: {str(e)}"
                         )
                         continue
         return data
     except FileNotFoundError:
-        print(f"Error: {filename} not found.")
+        logger.error(f"Error: {filename} not found.")
         return {}
     except Exception as e:
-        print(f"An error occurred while parsing {filename}: {e}")
+        logger.error(f"An error occurred while parsing {filename}: {e}")
         return {}
 
 
@@ -116,15 +117,16 @@ def parse_name_aliases(filename: str) -> dict[str, list[str]]:
                     continue
                 fields = line.split(";")
                 if len(fields) >= 2:
-                    code_point_hex = fields[0]
+                    code_point_int = int(fields[0], 16)
+                    code_point_hex = format(code_point_int, "04X")
                     alias = fields[1]
                     aliases_data[code_point_hex].append(alias)
         return aliases_data
     except FileNotFoundError:
-        print(f"Error: {filename} not found.")
+        logger.error(f"Error: {filename} not found.")
         return {}
     except Exception as e:
-        print(f"An error occurred while parsing {filename}: {e}")
+        logger.error(f"An error occurred while parsing {filename}: {e}")
         return {}
 
 
@@ -183,10 +185,10 @@ def parse_names_list(filename: str) -> dict[str, list[str]]:
 
         return informative_aliases
     except FileNotFoundError:
-        print(f"Error: {filename} not found.")
+        logger.error(f"Error: {filename} not found.")
         return {}
     except Exception as e:
-        print(f"An error occurred while parsing {filename}: {e}")
+        logger.error(f"An error occurred while parsing {filename}: {e}")
         return {}
 
 
@@ -216,12 +218,17 @@ def parse_cldr_annotations(filename: str) -> dict[str, list[str]]:
             # Get the character code point
             if "cp" in annotation.attrib:
                 char = annotation.attrib["cp"]
-                # Convert character to code point
-                if len(char) == 1:
-                    code_point_hex = format(ord(char), "X")
-                else:
-                    # Handle multi-character code points
-                    code_point_hex = format(ord(char[0]), "X")
+                # Convert character sequence to code points and ensure 4-digit format
+                code_points = []
+                for c in char:
+                    cp = ord(c)
+                    cp_hex = format(cp, "04X")
+                    code_points.append(cp_hex)
+                code_point_hex = code_points[0]  # Use first code point as key
+
+                # Store full sequence info if multi-char
+                if len(code_points) > 1:
+                    logger.debug(f"Multi-char sequence: {char} -> {code_points}")
 
                 # Get the annotations (pipe-separated list)
                 if annotation.text:
@@ -231,10 +238,10 @@ def parse_cldr_annotations(filename: str) -> dict[str, list[str]]:
 
         return cldr_annotations
     except FileNotFoundError:
-        print(f"Error: {filename} not found.")
+        logger.error(f"Error: {filename} not found.")
         return {}
     except Exception as e:
-        print(f"An error occurred while parsing {filename}: {e}")
+        logger.error(f"An error occurred while parsing {filename}: {e}")
         return {}
 
 
@@ -268,9 +275,9 @@ def process_data_files(
     # Parse the Unicode data files
     logger.debug("Starting Unicode data file processing")
     unicode_data = parse_unicode_data(file_paths["unicode_data"])
-    if unicode_data is None:
+    if not unicode_data:
         logger.debug("Failed to parse Unicode data file")
-        return None, {}
+        return {}, {}
 
     # Get the configured alias sources
     alias_sources = get_alias_sources()
@@ -309,10 +316,11 @@ def process_data_files(
     # Process and add formal aliases if configured
     if ALIAS_SOURCE_FORMAL in alias_sources:
         for code_point, aliases in formal_aliases.items():
+            code_point_hex = code_point.upper()
             for alias in aliases:
                 normalized_alias = normalize_alias(alias)
-                if normalized_alias not in alias_sets[code_point]:
-                    alias_sets[code_point].add(normalized_alias)
+                if normalized_alias not in alias_sets[code_point_hex]:
+                    alias_sets[code_point_hex].add(normalized_alias)
             processed_code_points += 1
             if progress_item:
                 progress_item.update_progress(
@@ -346,10 +354,11 @@ def process_data_files(
     # Process and add CLDR annotations if configured
     if ALIAS_SOURCE_CLDR in alias_sources:
         for code_point, annotations in cldr_annotations.items():
+            code_point_hex = code_point.upper()
             for annotation in annotations:
                 normalized_alias = normalize_alias(annotation)
-                if normalized_alias not in alias_sets[code_point]:
-                    alias_sets[code_point].add(normalized_alias)
+                if normalized_alias not in alias_sets[code_point_hex]:
+                    alias_sets[code_point_hex].add(normalized_alias)
             processed_code_points += 1
             if progress_item:
                 progress_item.update_progress(
@@ -465,15 +474,10 @@ def save_master_data_file(
     If file_paths or checksum is provided, the filename will include a checksum
     to enable caching and reuse of processed data.
 
-    If file_paths or checksum is provided, the filename will include a checksum
-    to enable caching and reuse of processed data.
-
     Args:
         unicode_data: Dictionary mapping code points to character information
         aliases_data: Dictionary mapping code points to lists of aliases
         data_dir: Directory to save the master data file
-        file_paths: Dictionary mapping file types to file paths (optional)
-        checksum: Pre-calculated checksum string (optional)
         file_paths: Dictionary mapping file types to file paths (optional)
         checksum: Pre-calculated checksum string (optional)
 
@@ -514,20 +518,6 @@ def save_master_data_file(
 
             master_file_path = os.path.join(data_dir, MASTER_DATA_FILE)
 
-        # Determine the master file path based on checksum if available
-        if checksum or file_paths:
-            # Get a file path that includes the checksum
-            master_file_path = get_master_file_path(
-                fetch_options=type("FetchOptions", (), {"data_dir": data_dir})(),
-                file_paths=file_paths,
-                checksum=checksum,
-            )
-        else:
-            # Use the default master file path
-            from .config import MASTER_DATA_FILE
-
-            master_file_path = os.path.join(data_dir, MASTER_DATA_FILE)
-
         # Save the data to the master file
         with open(master_file_path, "w", encoding="utf-8") as f:
             json.dump(master_data, f, ensure_ascii=False, indent=2)
@@ -539,7 +529,7 @@ def save_master_data_file(
         return master_file_path
 
     except Exception as e:
-        print(f"Error saving master data file: {e}")
+        logger.error(f"Error saving master data file: {e}")
         return None
 
 
@@ -565,12 +555,43 @@ def load_master_data_file(
         with open(master_file_path, encoding="utf-8") as f:
             master_data = json.load(f)
 
-        # Extract the unicode_data and aliases_data
-        unicode_data_dict = master_data.get("unicode_data", {})
-        aliases_data = master_data.get("aliases_data", {})
+        # Validate the master data structure
+        if not isinstance(master_data, dict):
+            logger.error("Invalid master data format: root must be a dictionary")
+            return None, None
 
-        # Convert dictionaries to UnicodeCharInfo objects
-        unicode_data = unicode_data_dict
+        # Extract and validate unicode_data
+        unicode_data = master_data.get("unicode_data")
+        if not isinstance(unicode_data, dict):
+            logger.error("Invalid master data format: unicode_data must be a dictionary")
+            return None, None
+
+        # Validate unicode_data entries
+        for code_point, char_info in unicode_data.items():
+            if not isinstance(char_info, dict):
+                logger.error(f"Invalid character info for code point {code_point}")
+                return None, None
+            required_fields = {"name", "category", "char_obj"}
+            missing_fields = [
+                field for field in required_fields if field not in char_info
+            ]
+            if missing_fields:
+                logger.error(
+                    f"Missing required fields in character info for {code_point}"
+                )
+                return None, None
+
+        # Extract and validate aliases_data
+        aliases_data = master_data.get("aliases_data")
+        if not isinstance(aliases_data, dict):
+            logger.error("Invalid master data format: aliases_data must be a dictionary")
+            return None, None
+
+        # Validate aliases_data entries
+        for code_point, aliases in aliases_data.items():
+            if not isinstance(aliases, list):
+                logger.error(f"Invalid aliases format for code point {code_point}")
+                return None, None
 
         total_aliases = sum(len(aliases) for aliases in aliases_data.values())
         logger.debug(f"Loaded master data file: {master_file_path}")
@@ -579,10 +600,10 @@ def load_master_data_file(
         return unicode_data, aliases_data
 
     except json.JSONDecodeError as e:
-        print(f"Error decoding master data file: {e}")
+        logger.error(f"Failed to decode JSON from master file: {e}")
         return None, None
     except Exception as e:
-        print(f"Error loading master data file: {e}")
+        logger.error(f"Error loading master data file: {e}")
         return None, None
 
 
@@ -609,167 +630,116 @@ def get_master_file_path(
     Returns:
         Path to the master data file
     """
-    from .config import DEFAULT_DATA_DIR, MASTER_DATA_FILE
+    from .config import MASTER_DATA_FILE
 
-    # Determine which data directory to use
-    data_dir = fetch_options.data_dir
+    # Get the base master file path
+    data_dir = getattr(fetch_options, "data_dir", None)
     if not data_dir:
-        data_dir = DEFAULT_DATA_DIR
+        logger.error("No data directory specified in fetch options")
+        return MASTER_DATA_FILE
 
-    # Create a filename with the checksum if we have file paths or a checksum
-    if checksum:
-        master_filename = f"unicode_master_data_{checksum}.json"
-    elif file_paths:
-        calculated_checksum = calculate_source_files_checksum(file_paths)
-        master_filename = f"unicode_master_data_{calculated_checksum}.json"
-    else:
-        master_filename = MASTER_DATA_FILE
+    base_path = os.path.join(data_dir, MASTER_DATA_FILE)
 
-    return os.path.join(data_dir, master_filename)
+    # If no checksum info provided, return the base path
+    if not file_paths and not checksum:
+        return base_path
 
-    # Create a filename with the checksum if we have file paths or a checksum
-    if checksum:
-        master_filename = f"unicode_master_data_{checksum}.json"
-    elif file_paths:
-        calculated_checksum = calculate_source_files_checksum(file_paths)
-        master_filename = f"unicode_master_data_{calculated_checksum}.json"
-    else:
-        master_filename = MASTER_DATA_FILE
+    # Calculate or use the provided checksum
+    if not checksum and file_paths:
+        checksum = calculate_source_files_checksum(file_paths)
 
-    # Return the path to the master data file
-    return os.path.join(data_dir, master_filename)
-    return os.path.join(data_dir, master_filename)
+    # Insert the checksum before the file extension
+    base_name, ext = os.path.splitext(MASTER_DATA_FILE)
+    return os.path.join(data_dir, f"{base_name}-{checksum}{ext}")
 
 
 def calculate_alias_statistics(aliases_data: dict[str, list[str]]) -> dict[str, Any]:
     """
-    Calculate statistics about aliases.
+    Calculate statistics about the aliases data.
 
     Args:
         aliases_data: Dictionary mapping code points to lists of aliases
 
     Returns:
-        Dictionary with statistics:
-        - total_characters: Total number of characters with aliases
-        - total_aliases: Total number of aliases across all characters
-        - avg_aliases_per_char: Average number of aliases per character
-        - median_aliases_per_char: Median number of aliases per character
-        - max_aliases: Maximum number of aliases for any character
-        - min_aliases: Minimum number of aliases for any character
-        - chars_with_no_aliases: Number of characters with no aliases
+        Dictionary containing statistics about the aliases data
     """
-    if not aliases_data:
-        return {
-            "total_characters": 0,
-            "total_aliases": 0,
-            "avg_aliases_per_char": 0,
-            "median_aliases_per_char": 0,
-            "max_aliases": 0,
-            "min_aliases": 0,
-            "chars_with_no_aliases": 0,
-        }
-
-    # Count aliases per character
-    alias_counts = [len(aliases) for aliases in aliases_data.values()]
-
-    # Calculate statistics
-    total_characters = len(aliases_data)
-    total_aliases = sum(alias_counts)
-    avg_aliases_per_char = total_aliases / total_characters if total_characters > 0 else 0
-
-    # Calculate median
-    sorted_counts = sorted(alias_counts)
-    mid = len(sorted_counts) // 2
-    if len(sorted_counts) % 2 == 0:
-        median_aliases_per_char = (sorted_counts[mid - 1] + sorted_counts[mid]) / 2
-    else:
-        median_aliases_per_char = sorted_counts[mid]
-
-    # Find min and max
-    max_aliases = max(alias_counts) if alias_counts else 0
-    min_aliases = min(alias_counts) if alias_counts else 0
-
-    # Count characters with no aliases
-    chars_with_no_aliases = sum(1 for count in alias_counts if count == 0)
+    total_chars = len(aliases_data)
+    total_aliases = sum(len(aliases) for aliases in aliases_data.values())
+    avg_aliases = total_aliases / total_chars if total_chars > 0 else 0
+    max_aliases = max((len(aliases) for aliases in aliases_data.values()), default=0)
+    min_aliases = min((len(aliases) for aliases in aliases_data.values()), default=0)
 
     return {
-        "total_characters": total_characters,
+        "total_characters": total_chars,
         "total_aliases": total_aliases,
-        "avg_aliases_per_char": avg_aliases_per_char,
-        "median_aliases_per_char": median_aliases_per_char,
-        "max_aliases": max_aliases,
-        "min_aliases": min_aliases,
-        "chars_with_no_aliases": chars_with_no_aliases,
+        "average_aliases_per_char": avg_aliases,
+        "max_aliases_for_char": max_aliases,
+        "min_aliases_for_char": min_aliases,
     }
 
 
 def calculate_file_checksum(file_path: str) -> str:
     """
-    Calculate MD5 checksum of a file.
+    Calculate a SHA-256 checksum of a file.
 
     Args:
         file_path: Path to the file
 
     Returns:
-        MD5 checksum as a hexadecimal string
+        Hexadecimal string of the SHA-256 hash
     """
-    if not os.path.exists(file_path):
-        return ""
-
-    hash_md5 = hashlib.md5()
+    sha256_hash = hashlib.sha256()
     with open(file_path, "rb") as f:
-        for chunk in iter(lambda: f.read(4096), b""):
-            hash_md5.update(chunk)
-    return hash_md5.hexdigest()
+        # Read the file in chunks to handle large files
+        for byte_block in iter(lambda: f.read(4096), b""):
+            sha256_hash.update(byte_block)
+    return sha256_hash.hexdigest()
 
 
 def calculate_source_files_checksum(file_paths: dict[str, str]) -> str:
     """
-    Calculate a combined checksum of all source files.
+    Calculate a combined checksum for multiple source files.
 
     Args:
         file_paths: Dictionary mapping file types to file paths
 
     Returns:
-        Combined MD5 checksum as a hexadecimal string
+        Combined checksum string
     """
-    # Sort the file types to ensure a consistent order
-    file_types = sorted(file_paths.keys())
+    # Sort the file paths to ensure consistent ordering
+    sorted_paths = sorted(file_paths.items())
 
     # Calculate checksums for each file
     checksums = []
-    for file_type in file_types:
-        file_path = file_paths[file_type]
-        checksum = calculate_file_checksum(file_path)
-        checksums.append(f"{file_type}:{checksum}")
+    for file_type, file_path in sorted_paths:
+        if os.path.exists(file_path):
+            file_checksum = calculate_file_checksum(file_path)
+            checksums.append(f"{file_type}:{file_checksum}")
 
-    # Create a combined checksum string and hash it
-    combined_string = ",".join(checksums)
-    hash_md5 = hashlib.md5()
-    hash_md5.update(combined_string.encode("utf-8"))
-
-    return hash_md5.hexdigest()
+    # Combine the checksums
+    combined = "|".join(checksums)
+    final_checksum = hashlib.sha256(combined.encode()).hexdigest()
+    return final_checksum[:8]  # Use first 8 characters for brevity
 
 
 def find_master_file_by_checksum(data_dir: str, checksum: str) -> Optional[str]:
     """
-    Find an existing master file with the given checksum.
+    Find a master data file with a specific checksum.
 
     Args:
-        data_dir: Directory to search for master data files
-        checksum: Checksum to look for in file names
+        data_dir: Directory to search in
+        checksum: Checksum to look for
 
     Returns:
-        Path to the master file if found, None otherwise
+        Path to the master data file if found, None otherwise
     """
-    if not os.path.exists(data_dir):
-        return None
+    from .config import MASTER_DATA_FILE
 
-    # Look for a file with the checksum in its name
-    master_filename = f"unicode_master_data_{checksum}.json"
-    master_file_path = os.path.join(data_dir, master_filename)
+    base_name, ext = os.path.splitext(MASTER_DATA_FILE)
+    expected_name = f"{base_name}_{checksum}{ext}"  # Changed from - to _
+    expected_path = os.path.join(data_dir, expected_name)
 
-    if os.path.exists(master_file_path):
-        return master_file_path
+    if os.path.exists(expected_path):
+        return expected_path
 
     return None

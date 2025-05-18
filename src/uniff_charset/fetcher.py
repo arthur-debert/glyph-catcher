@@ -85,8 +85,8 @@ def download_file(url: str, options: FetchOptions) -> Optional[str]:
             if os.path.exists(temp_file_path):
                 os.unlink(temp_file_path)
             return None
-    except Exception:
-        return None
+    except Exception as e:
+        logger.debug(f"Error handling file {url}: {str(e)}")
         return None
 
 
@@ -139,10 +139,10 @@ def fetch_all_data_files(options: FetchOptions) -> dict[str, str]:
     cldr_annotations_file = download_file(CLDR_ANNOTATIONS_URL, options)
     if cldr_annotations_file:
         result["cldr_annotations"] = cldr_annotations_file
-        logger.debug("Successfully downloaded all data files")
     else:
         logger.debug("CLDR annotations download failed (optional)")
 
+    logger.debug("Successfully downloaded all required data files")
     return result
 
 

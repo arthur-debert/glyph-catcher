@@ -78,9 +78,12 @@ class CSVExporter(BaseExporter):
                 writer.writerow(headers)
 
                 for code_point_hex, data in unicode_data.items():
+                    # Ensure consistent 4-digit hex formatting
+                    code_point_int = int(code_point_hex, 16)
+                    formatted_hex = format(code_point_int, "04X")
                     current_aliases = aliases_data.get(code_point_hex, [])
                     row = [
-                        f"U+{code_point_hex}",
+                        f"U+{formatted_hex}",
                         data["char_obj"],
                         data["name"],
                         data["category"],

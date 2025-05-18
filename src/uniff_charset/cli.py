@@ -6,6 +6,7 @@ command definitions, and usage information.
 """
 
 import logging
+import os
 
 import click
 from uniff_core.logging import setup_logging
@@ -184,7 +185,7 @@ def generate(
         use_cache=use_cache,
         cache_dir=cache_dir,
         use_temp_cache=use_temp_cache,
-        data_dir=data_dir,
+        data_dir=data_dir if data_dir is not None else DEFAULT_DATA_DIR,
         force=force,
     )
 
@@ -210,13 +211,19 @@ def generate(
     setup_logging(debug)
 
     # Process the data with progress display
-    success, output_files = process_unicode_data(
-        fetch_options, export_options, verbose=True, debug=debug
-    )
+    try:
+        # Process the data with progress display
+        success, output_files = process_unicode_data(
+            fetch_options, export_options, verbose=True, debug=debug
+        )
 
-    # Final output
-    if success:
-        if output_files:
+        # Verify all output files exist and are not empty
+        if success and output_files:
+            for file_path in output_files:
+                if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
+                    raise RuntimeError(f"Output file verification failed: {file_path}")
+
+            # Only show success after verifying all files
             click.echo(
                 click.style(
                     "✓ Unicode data processing completed successfully!",
@@ -228,10 +235,13 @@ def generate(
                 click.echo(f"  - {file_path}")
             return 0
         else:
-            click.echo(click.style("✗ Unicode data processing failed.", fg="red"))
-            if exit_on_error:
-                return 1
-            return 0
+            raise RuntimeError("No output files were generated")
+
+    except Exception as e:
+        click.echo(click.style(f"✗ Unicode data processing failed: {str(e)}", fg="red"))
+        if exit_on_error:
+            return 1
+        return 0
 
 
 @cli.command()

@@ -77,10 +77,17 @@ fi
 
 # Execute the command
 echo "Executing: $CMD"
-$CMD
+if ! $CMD; then
+    echo "Export failed!"
+    exit 1
+fi
+
+# Verify output files exist
+if ! ls "$OUTPUT_DIR"/*.{csv,json,lua,txt}* &>/dev/null; then
+    echo "No output files found in $OUTPUT_DIR"
+    exit 1
+fi
 
 # List the generated files
 echo "Generated files in $OUTPUT_DIR:"
 ls -la "$OUTPUT_DIR"
-
-echo "Export completed successfully!"

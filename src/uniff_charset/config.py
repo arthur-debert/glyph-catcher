@@ -90,6 +90,17 @@ _UNICODE_BLOCKS = {
     range(0x2B00, 0x2BFF + 1): "Miscellaneous Symbols and Arrows",
     range(0x1F300, 0x1F5FF + 1): "Miscellaneous Symbols and Pictographs",
     range(0x1F600, 0x1F64F + 1): "Emoticons",
+    # Add missing blocks
+    range(0xE0100, 0xE01EF + 1): "Variation Selectors Supplement",
+    range(0xFE00, 0xFE0F + 1): "Variation Selectors",
+    range(0x1F900, 0x1F9FF + 1): "Supplemental Symbols and Pictographs",
+    range(0x1FA70, 0x1FAFF + 1): "Symbols and Pictographs Extended-A",
+    range(0x1F680, 0x1F6FF + 1): "Transport and Map Symbols",
+    range(0x1F700, 0x1F77F + 1): "Alchemical Symbols",
+    range(0x1F780, 0x1F7FF + 1): "Geometric Shapes Extended",
+    range(0x1F800, 0x1F8FF + 1): "Supplemental Arrows-C",
+    range(0x1F100, 0x1F1FF + 1): "Enclosed Alphanumeric Supplement",
+    range(0x1F200, 0x1F2FF + 1): "Enclosed Ideographic Supplement",
 }
 
 # Dataset block definitions
@@ -137,7 +148,7 @@ def get_alias_sources(dataset: str = DATASET_EVERYDAY) -> set[str]:
 
 def get_output_filename(fmt: str, dataset: str = DATASET_EVERYDAY) -> str:
     """Get the output filename for a given format and dataset."""
-    if dataset == DATASET_EVERYDAY:
-        return f"unicode.{dataset}.{fmt}"
-    else:
-        return f"unicode_data.{fmt}"
+    # Always use consistent naming pattern
+    if fmt == "csv":
+        return "unicode_data.csv"
+    return f"unicode.{dataset}.{fmt}"

@@ -2,11 +2,16 @@
 Module for exporting processed Unicode data to various formats.
 """
 
+import contextlib
 import gzip
+import logging
 import os
 import shutil
+from typing import TextIO
 
 from .config import get_output_filename
+
+logger = logging.getLogger("uniff")
 from .exporters import registry
 from .processor import (
     filter_by_dataset,
@@ -14,6 +19,22 @@ from .processor import (
     load_master_data_file,
 )
 from .types import ExportOptions
+
+
+@contextlib.contextmanager
+def managed_file_handlers():
+    """Context manager for handling multiple file handlers."""
+    handlers: dict[str, TextIO] = {}
+    try:
+        yield handlers
+    finally:
+        # Ensure all files are properly closed
+        for handler in handlers.values():
+            try:
+                if not handler.closed:
+                    handler.close()
+            except Exception as e:
+                logger.error(f"Error closing file handler: {e}")
 
 
 def export_data(
@@ -32,19 +53,20 @@ def export_data(
     Returns:
         List of paths to the generated output files
     """
-    # If use_master_file is True and master_file_path is provided, load data from the
-    # master file
+    # Load data from master file if specified in options
+    # This allows reusing previously exported data
     if options.use_master_file and options.master_file_path:
-        try:
-            loaded_unicode_data, loaded_aliases_data = load_master_data_file(
-                options.master_file_path
-            )
+        loaded_unicode_data, loaded_aliases_data = load_master_data_file(
+            options.master_file_path
+        )
 
-            if loaded_unicode_data and loaded_aliases_data:
-                unicode_data = loaded_unicode_data
-                aliases_data = loaded_aliases_data
-        except Exception:
-            pass
+        if not loaded_unicode_data or not loaded_aliases_data:
+            error_msg = "Failed to load data from master file"
+            logger.error(error_msg)
+            raise ValueError(error_msg)
+
+        unicode_data = loaded_unicode_data
+        aliases_data = loaded_aliases_data
 
     # Filter data by dataset or Unicode blocks if specified
     if options.dataset:
@@ -56,18 +78,41 @@ def export_data(
             unicode_data, aliases_data, options.unicode_blocks
         )
 
-    # Create output directory if it doesn't exist
+    # Check if we have any data to export
+    if not unicode_data:
+        error_msg = "No output files generated"
+        logger.error(error_msg)
+        raise ValueError(error_msg)
+
+    # Create output directory if it doesn't exist and ensure proper permissions
     os.makedirs(options.output_dir, exist_ok=True)
+    os.chmod(options.output_dir, 0o755)  # rwxr-xr-x
 
     # Determine which formats to export
-    formats = (
-        registry.get_supported_formats()
-        if options.format_type == "all"
-        else [options.format_type]
-    )
+    if options.format_type == "all":
+        formats = registry.get_supported_formats()
+        if not formats:
+            logger.error("No supported formats available")
+            return []
+        logger.debug(f"Using all supported formats: {formats}")
+    else:
+        exporter = registry.get_exporter(options.format_type)
+        if not exporter:
+            logger.error(f"No exporter found for format: {options.format_type}")
+            return []
+        formats = [options.format_type]
+        logger.debug(f"Using single format: {options.format_type}")
+
+    logger.debug(f"Exporting formats: {formats}")
+    logger.debug(f"Format type: {options.format_type}")
+    logger.debug(f"Supported formats: {registry.get_supported_formats()}")
+    logger.debug(f"Output directory: {options.output_dir}")
 
     # Optimized export: process all formats at once to avoid multiple reads of master data
-    return optimized_export(unicode_data, aliases_data, formats, options)
+    output_files = optimized_export(unicode_data, aliases_data, formats, options)
+
+    logger.debug(f"Generated output files: {output_files}")
+    return output_files
 
 
 def optimized_export(
@@ -88,27 +133,40 @@ def optimized_export(
     Returns:
         List of paths to the generated output files
     """
-    if not unicode_data:
-        return []
+    if unicode_data is None or not unicode_data:
+        raise ValueError("No Unicode data provided for export")
 
     output_files = []
-    file_handlers = {}
-    exporters = {}
-    temp_filenames = {}
-    csv_writers = {}
-    max_aliases_by_fmt = {}
+    file_handlers: dict[str, TextIO] = {}
+    exporters: dict[str, object] = {}
+    temp_filenames: dict[str, tuple] = {}
+    csv_writers: dict[str, object] = {}
+    max_aliases_by_fmt: dict[str, int] = {}
+
+    # Create output directory if it doesn't exist and ensure proper permissions
+    os.makedirs(options.output_dir, exist_ok=True)
+    os.chmod(options.output_dir, 0o755)  # rwxr-xr-x
+    if not os.access(options.output_dir, os.W_OK):
+        raise OSError(f"Output directory {options.output_dir} is not writable")
+
+    # Check if we have any exporters available
+    available_exporters = {fmt: registry.get_exporter(fmt) for fmt in formats}
+    active_formats = [fmt for fmt, exp in available_exporters.items() if exp]
+
+    if not active_formats:
+        raise ValueError("No exporters available for the requested formats")
 
     try:
         # 1. Initialize exporters and open files for all formats
-        for fmt in formats:
-            exporter = registry.get_exporter(fmt)
-            if not exporter:
-                continue
-
+        for fmt in active_formats:
+            exporter = available_exporters[fmt]
             exporters[fmt] = exporter
 
             # Get the output filename based on format and dataset
             filename = get_output_filename(fmt, options.dataset)
+            # Add extension if not already present
+            if not filename.endswith(exporter.extension):
+                filename = filename + exporter.extension
             output_filename = os.path.join(options.output_dir, filename)
 
             # Create a temporary file for uncompressed output
@@ -116,48 +174,50 @@ def optimized_export(
             if options.compress:
                 temp_filename = output_filename + ".temp"
 
-            temp_filenames[fmt] = (temp_filename, output_filename)
+            # Initialize format-specific handlers
+            if fmt == "json":
+                temp_filenames[fmt] = (
+                    temp_filename,
+                    output_filename,
+                    False,  # False = no items written yet
+                )
+            else:
+                temp_filenames[fmt] = (temp_filename, output_filename)
 
-            # Open the file for writing
-            file_handlers[fmt] = open(temp_filename, "w", encoding="utf-8")
+            # Open and initialize file with format-specific headers
+            with open(temp_filename, "w", encoding="utf-8", newline="") as file_handler:
+                file_handlers[fmt] = file_handler
 
-            # Pre-calculate max aliases for CSV format
-            if fmt == "csv":
-                import csv
+                # Write format-specific headers
+                if fmt == "json":
+                    file_handler.write("[\n")
+                elif fmt == "lua":
+                    file_handler.write("-- Auto-generated unicode data module\n")
+                    file_handler.write("-- Generated by uniff-gen\n")
+                    file_handler.write("return {\n")
+                elif fmt == "csv":
+                    import csv
 
-                max_aliases = 0
-                if aliases_data:
-                    for cp in unicode_data:
-                        if cp in aliases_data:
-                            max_aliases = max(max_aliases, len(aliases_data[cp]))
-                max_aliases_by_fmt[fmt] = max_aliases
+                    # Calculate max aliases
+                    max_aliases = 0
+                    if aliases_data:
+                        for aliases in aliases_data.values():
+                            max_aliases = max(max_aliases, len(aliases))
+                    max_aliases_by_fmt[fmt] = max_aliases
 
-                # Create CSV writer
-                csv_writers[fmt] = csv.writer(file_handlers[fmt])
-
-                # Write header row
-                headers = ["code_point", "character", "name", "category", "block"]
-                for i in range(1, max_aliases + 1):
-                    headers.append(f"alias_{i}")
-                csv_writers[fmt].writerow(headers)
-            elif fmt == "json":
-                file_handlers[fmt].write("[\n")
-                # Track if we've written the first item
-                temp_filenames[fmt] = (temp_filename, output_filename, False)
-            elif fmt == "lua":
-                file_handlers[fmt].write("-- Auto-generated unicode data module\n")
-                file_handlers[fmt].write("-- Generated by uniff-gen\n")
-                file_handlers[fmt].write("return {\n")
+                    # Create CSV writer and write header
+                    csv_writers[fmt] = csv.writer(file_handlers[fmt])
+                    headers = ["code_point", "character", "name", "category", "block"]
+                    for i in range(1, max_aliases + 1):
+                        headers.append(f"alias_{i}")
+                    csv_writers[fmt].writerow(headers)
 
         # 2. Process each record once and write to all formats
         for code_point_hex, data in unicode_data.items():
             current_aliases = aliases_data.get(code_point_hex, [])
 
-            # Write this record to all formats
-            for fmt in formats:
-                if fmt not in file_handlers:
-                    continue
-
+            # Write this record to all active formats
+            for fmt in active_formats:
                 file_handler = file_handlers[fmt]
 
                 if fmt == "csv":
@@ -191,12 +251,13 @@ def optimized_export(
                     json_str = json.dumps(entry, ensure_ascii=False, indent=2)
 
                     # Add comma if not the first item
-                    temp_filename, output_filename, has_items = temp_filenames[fmt]
-                    if has_items:
-                        file_handler.write(",\n")
-                    else:
-                        # Mark that we've written the first item
-                        temp_filenames[fmt] = (temp_filename, output_filename, True)
+                    if fmt in temp_filenames:
+                        temp_filename, output_filename, has_items = temp_filenames[fmt]
+                        if has_items:
+                            file_handler.write(",\n")
+                        else:
+                            # Mark that we've written the first item
+                            temp_filenames[fmt] = (temp_filename, output_filename, True)
 
                     file_handler.write(json_str)
 
@@ -276,55 +337,111 @@ def optimized_export(
 
                     # Join with pipe separator
                     file_handler.write("|".join(line_parts) + "\n")
-
-        # 3. Write footers and close files
+        # 3. Write footers and process files
         for fmt in formats:
             if fmt not in file_handlers:
                 continue
 
             file_handler = file_handlers[fmt]
 
-            # Write format-specific footers
-            if fmt == "json":
-                file_handler.write("\n]")
-            elif fmt == "lua":
-                file_handler.write("}\n")
+            try:
+                # Write format-specific footers
+                if fmt == "json":
+                    file_handler.write("\n]")
+                elif fmt == "lua":
+                    file_handler.write("}\n")
 
-            file_handler.close()
+                # Flush and close the file
+                file_handler.flush()
+                os.fsync(file_handler.fileno())
+                file_handler.close()
 
-        # 4. Handle compression and verification
-        for fmt in formats:
-            if fmt not in exporters:
-                continue
+                # Get filenames
+                if fmt == "json":
+                    temp_filename, output_filename, _ = temp_filenames[fmt]
+                else:
+                    temp_filename, output_filename = temp_filenames[fmt]
 
-            if fmt == "json":
-                temp_filename, output_filename, _ = temp_filenames[fmt]
-            else:
-                temp_filename, output_filename = temp_filenames[fmt]
+                # Verify the uncompressed file exists and is not empty
+                if (
+                    not os.path.exists(temp_filename)
+                    or os.path.getsize(temp_filename) == 0
+                ):
+                    raise OSError(f"Failed to create output file: {temp_filename}")
 
-            # Compress the file if requested
-            if options.compress:
-                compress_file(temp_filename, output_filename)
-                os.remove(temp_filename)  # Remove the temporary uncompressed file
-                output_filename = output_filename + ".gz"
-            else:
-                # Validate the exported file
-                exporters[fmt].verify(temp_filename)
+                # Compress if requested
+                if options.compress:
+                    compressed_filename = output_filename + ".gz"
+                    # Close file before compression
+                    file_handler.close()
 
-            output_files.append(output_filename)
+                    try:
+                        compress_file(temp_filename, compressed_filename)
+                    except Exception as e:
+                        raise Exception("Compression failed") from e
+
+                    if not os.path.exists(compressed_filename):
+                        raise Exception("Compression failed")
+                    if os.path.getsize(compressed_filename) == 0:
+                        raise Exception("Compression failed")
+
+                    os.remove(temp_filename)  # Remove temp file
+                    output_filename = compressed_filename
+                else:
+                    # Validate the exported file
+                    exporters[fmt].verify(temp_filename)
+                    output_filename = temp_filename
+
+                # Add to output files list
+                output_files.append(output_filename)
+
+            except Exception as e:
+                # Close file before re-raising
+                with contextlib.suppress(Exception):
+                    file_handler.close()
+                # Re-raise with original message
+                if "Compression failed" in str(e):
+                    raise Exception("Compression failed") from e
+                raise type(e)(str(e)) from e
+
+        if not output_files:
+            raise ValueError("No output files were generated")
 
         return output_files
 
+    except OSError as e:
+        if "Compression failed" in str(e):
+            logger.error("Export failed: Compression failed")
+            raise RuntimeError("Export failed: Compression failed") from e
+        logger.error(f"Export failed: {e}")
+        raise RuntimeError(f"Export failed: {str(e)}") from e
     except Exception as e:
-        print(f"Error in optimized export: {e}")
-        # Clean up any open file handlers
+        logger.error(f"Export failed: {e}")
+        raise RuntimeError(f"Export failed: {str(e)}") from e
+
+    finally:
+        # Clean up resources
         for file_handler in file_handlers.values():
-            if not file_handler.closed:
-                file_handler.close()
-        return []
+            try:
+                if not file_handler.closed:
+                    file_handler.close()
+            except Exception as close_error:
+                logger.error(f"Error closing file handler: {close_error}")
+
+        # Clean up temporary files
+        for fmt in formats:
+            if fmt in temp_filenames:
+                temp_file = temp_filenames[fmt][0]
+                try:
+                    if os.path.exists(temp_file):
+                        os.remove(temp_file)
+                except Exception as cleanup_error:
+                    logger.error(
+                        f"Error cleaning up temporary file {temp_file}: {cleanup_error}"
+                    )
 
 
-def compress_file(input_file: str, output_file: str) -> bool:
+def compress_file(input_file: str, output_file: str) -> None:
     """
     Compress a file using gzip.
 
@@ -332,17 +449,17 @@ def compress_file(input_file: str, output_file: str) -> bool:
         input_file: Path to the file to compress
         output_file: Path to the output file
 
-    Returns:
-        True if the compression was successful, False otherwise
+    Raises:
+        OSError: If there is an error reading, writing, or compressing the file
     """
     try:
-        with open(input_file, "rb") as f_in:
-            with gzip.open(output_file + ".gz", "wb", compresslevel=9) as f_out:
-                shutil.copyfileobj(f_in, f_out)
-        return True
+        with (
+            open(input_file, "rb") as f_in,
+            gzip.open(output_file, "wb", compresslevel=9) as f_out,
+        ):
+            shutil.copyfileobj(f_in, f_out)
     except Exception as e:
-        print(f"Error compressing file: {e}")
-        return False
+        raise OSError(f"Failed to compress file {input_file}: {str(e)}") from e
 
 
 def save_source_files(file_paths: dict[str, str], output_dir: str) -> None:
