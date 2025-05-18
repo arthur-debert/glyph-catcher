@@ -147,3 +147,5 @@ tests/smoke/*
 tmp*
 # Cache directories
 cache/
+
+.data/
