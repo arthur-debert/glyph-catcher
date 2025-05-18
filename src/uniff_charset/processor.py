@@ -16,7 +16,6 @@ from .config import (
     ALIAS_SOURCE_INFORMATIVE,
     DATASET_COMPLETE,
     DATASET_TEST,
-    get_alias_sources,
     get_dataset_blocks,
     get_unicode_blocks,
 )
@@ -276,39 +275,59 @@ def process_data_files(
     logger.debug("Starting Unicode data file processing")
     unicode_data = parse_unicode_data(file_paths["unicode_data"])
     if not unicode_data:
-        logger.debug("Failed to parse Unicode data file")
-        return {}, {}
+        logger.error("Failed to parse Unicode data file")
+        raise ValueError("No output files generated")
 
-    # Get the configured alias sources
-    alias_sources = get_alias_sources()
+    # Get all alias sources for initial processing
+    # Dataset filtering will be done later in export_data
+    alias_sources = {ALIAS_SOURCE_FORMAL, ALIAS_SOURCE_INFORMATIVE, ALIAS_SOURCE_CLDR}
 
     # Parse the alias sources based on configuration
     formal_aliases = {}
     if ALIAS_SOURCE_FORMAL in alias_sources:
-        formal_aliases = parse_name_aliases(file_paths["name_aliases"])
+        formal_aliases = parse_name_aliases(file_paths.get("name_aliases", ""))
 
     informative_aliases = {}
     if ALIAS_SOURCE_INFORMATIVE in alias_sources:
-        informative_aliases = parse_names_list(file_paths["names_list"])
+        informative_aliases = parse_names_list(file_paths.get("names_list", ""))
 
-    cldr_annotations = {}
-    if ALIAS_SOURCE_CLDR in alias_sources and "cldr_annotations" in file_paths:
-        cldr_annotations = parse_cldr_annotations(file_paths["cldr_annotations"])
+    cldr_aliases = {}
+    if ALIAS_SOURCE_CLDR in alias_sources:
+        cldr_aliases = parse_cldr_annotations(file_paths.get("cldr_annotations", ""))
 
     # Merge aliases with deduplication
     aliases_data = defaultdict(list)
     alias_sets = defaultdict(set)  # Use sets for deduplication
 
-    # Calculate total work to be done - count total unique code points
-    total_code_points = len(
-        set().union(
-            formal_aliases.keys() if ALIAS_SOURCE_FORMAL in alias_sources else set(),
-            informative_aliases.keys()
-            if ALIAS_SOURCE_INFORMATIVE in alias_sources
-            else set(),
-            cldr_annotations.keys() if ALIAS_SOURCE_CLDR in alias_sources else set(),
-        )
-    )
+    # Process and add formal aliases if configured
+    for code_point, aliases in formal_aliases.items():
+        code_point_hex = code_point.upper()
+        for alias in aliases:
+            normalized_alias = normalize_alias(alias)
+            if normalized_alias not in alias_sets[code_point_hex]:
+                alias_sets[code_point_hex].add(normalized_alias)
+
+    # Process and add informative aliases if configured
+    for code_point, aliases in informative_aliases.items():
+        code_point_hex = code_point.upper()
+        for alias in aliases:
+            normalized_alias = normalize_alias(alias)
+            if normalized_alias not in alias_sets[code_point_hex]:
+                alias_sets[code_point_hex].add(normalized_alias)
+
+    # Process and add CLDR annotations if configured
+    for code_point, annotations in cldr_aliases.items():
+        code_point_hex = code_point.upper()
+        for annotation in annotations:
+            normalized_alias = normalize_alias(annotation)
+            if normalized_alias not in alias_sets[code_point_hex]:
+                alias_sets[code_point_hex].add(normalized_alias)
+
+    # Convert sets back to lists for compatibility with the rest of the codebase
+    for code_point, alias_set in alias_sets.items():
+        aliases_data[code_point] = sorted(alias_set)
+
+    return unicode_data, aliases_data
 
     # Initialize progress counter
     processed_code_points = 0
@@ -325,49 +344,6 @@ def process_data_files(
             if progress_item:
                 progress_item.update_progress(
                     processed_code_points,
-                    total_code_points,
-                    (
-                        f"Processing formal aliases "
-                        f"({processed_code_points}/{total_code_points})"
-                    ),
-                )
-
-    # Process and add informative aliases if configured
-    if ALIAS_SOURCE_INFORMATIVE in alias_sources:
-        for code_point, aliases in informative_aliases.items():
-            code_point_hex = code_point.upper()
-            for alias in aliases:
-                normalized_alias = normalize_alias(alias)
-                if normalized_alias not in alias_sets[code_point_hex]:
-                    alias_sets[code_point_hex].add(normalized_alias)
-            processed_code_points += 1
-            if progress_item:
-                progress_item.update_progress(
-                    processed_code_points,
-                    total_code_points,
-                    (
-                        f"Processing informative aliases "
-                        f"({processed_code_points}/{total_code_points})"
-                    ),
-                )
-
-    # Process and add CLDR annotations if configured
-    if ALIAS_SOURCE_CLDR in alias_sources:
-        for code_point, annotations in cldr_annotations.items():
-            code_point_hex = code_point.upper()
-            for annotation in annotations:
-                normalized_alias = normalize_alias(annotation)
-                if normalized_alias not in alias_sets[code_point_hex]:
-                    alias_sets[code_point_hex].add(normalized_alias)
-            processed_code_points += 1
-            if progress_item:
-                progress_item.update_progress(
-                    processed_code_points,
-                    total_code_points,
-                    (
-                        f"Processing CLDR annotations "
-                        f"({processed_code_points}/{total_code_points})"
-                    ),
                 )
 
     # Convert sets back to lists for compatibility with the rest of the codebase
@@ -419,11 +395,21 @@ def filter_by_dataset(
     blocks = get_dataset_blocks(dataset)
 
     # If no blocks are defined or dataset is 'complete', return all data
-    if not blocks or dataset == DATASET_COMPLETE:
+    if not blocks:
+        logger.debug(f"No blocks defined for dataset {dataset}")
+        return unicode_data, aliases_data
+    if dataset == DATASET_COMPLETE:
+        logger.debug("Using complete dataset, returning all data")
         return unicode_data, aliases_data
 
+    logger.debug(f"Filtering by blocks for dataset {dataset}: {blocks}")
+    logger.debug(f"Input data size: {len(unicode_data)} characters")
+
     # Filter by blocks
-    return filter_by_unicode_blocks(unicode_data, aliases_data, blocks)
+    filtered_data = filter_by_unicode_blocks(unicode_data, aliases_data, blocks)
+    logger.debug(f"Filtered data size: {len(filtered_data[0])} characters")
+
+    return filtered_data
 
 
 def filter_by_unicode_blocks(
@@ -443,20 +429,32 @@ def filter_by_unicode_blocks(
         Tuple of filtered (unicode_data, aliases_data)
     """
     if not blocks:
+        logger.debug("No blocks specified for filtering")
         return unicode_data, aliases_data
 
     # Special case: if blocks contains 'all', include all blocks
     if "all" in blocks:
+        logger.debug("'all' block specified, returning all data")
         return unicode_data, aliases_data
 
     filtered_unicode_data = {}
     filtered_aliases_data = {}
+    block_counts = {block: 0 for block in blocks}
 
     for code_point, char_info in unicode_data.items():
-        if "block" in char_info and char_info["block"] in blocks:
-            filtered_unicode_data[code_point] = char_info
-            if code_point in aliases_data:
-                filtered_aliases_data[code_point] = aliases_data[code_point]
+        if "block" in char_info:
+            block = char_info["block"]
+            if block in blocks:
+                filtered_unicode_data[code_point] = char_info
+                if code_point in aliases_data:
+                    filtered_aliases_data[code_point] = aliases_data[code_point]
+                block_counts[block] += 1
+            else:
+                logger.debug(f"Skipping character {code_point} in block {block}")
+
+    logger.debug("Characters per block:")
+    for block, count in block_counts.items():
+        logger.debug(f"  {block}: {count} characters")
 
     return filtered_unicode_data, filtered_aliases_data
 

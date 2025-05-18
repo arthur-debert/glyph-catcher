@@ -6,7 +6,6 @@ command definitions, and usage information.
 """
 
 import logging
-import os
 
 import click
 from uniff_core.logging import setup_logging
@@ -22,6 +21,8 @@ from .config import (
 from .fetcher import clean_cache
 from .processor import get_master_file_path
 from .types import CharsetExportOptions
+
+logger = logging.getLogger("uniff")
 
 
 @click.group()
@@ -128,7 +129,7 @@ def generate(
     dataset,
     compress,
     debug,
-):
+) -> int:
     """
     Generate Unicode character dataset in the specified format.
 
@@ -210,38 +211,31 @@ def generate(
     # Setup logging
     setup_logging(debug)
 
-    # Process the data with progress display
     try:
         # Process the data with progress display
-        success, output_files = process_unicode_data(
+        output_files = process_unicode_data(
             fetch_options, export_options, verbose=True, debug=debug
         )
 
-        # Verify all output files exist and are not empty
-        if success and output_files:
-            for file_path in output_files:
-                if not os.path.exists(file_path) or os.path.getsize(file_path) == 0:
-                    raise RuntimeError(f"Output file verification failed: {file_path}")
-
-            # Only show success after verifying all files
-            click.echo(
-                click.style(
-                    "✓ Unicode data processing completed successfully!",
-                    fg="green",
-                )
+        # Show success and list files
+        click.echo(
+            click.style(
+                "✓ Unicode data processing completed successfully!",
+                fg="green",
             )
-            click.echo("Generated files:")
-            for file_path in output_files:
-                click.echo(f"  - {file_path}")
-            return 0
-        else:
-            raise RuntimeError("No output files were generated")
+        )
+        click.echo("Generated files:")
+        for file_path in output_files:
+            click.echo(f"  - {file_path}")
+        return 0
 
     except Exception as e:
+        # Log the full traceback
+        logger.exception("Unicode data processing failed")
+        # Show error to user
         click.echo(click.style(f"✗ Unicode data processing failed: {str(e)}", fg="red"))
-        if exit_on_error:
-            return 1
-        return 0
+        # Always exit with code 1 on error
+        return 1
 
 
 @cli.command()
