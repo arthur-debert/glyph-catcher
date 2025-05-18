@@ -21,7 +21,7 @@ from .config import (
 )
 from .types import FetchOptions
 
-logger = logging.getLogger('uniff')
+logger = logging.getLogger("uniff")
 
 
 def download_file(url: str, options: FetchOptions) -> Optional[str]:

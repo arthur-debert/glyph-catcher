@@ -11,8 +11,6 @@ from typing import Optional
 import requests
 from uniff_core.types import FetchOptions
 
-logger = logging.getLogger('uniff')
-
 from .config import (
     CLDR_ANNOTATIONS_URL,
     DEFAULT_CACHE_DIR,
@@ -22,6 +20,8 @@ from .config import (
     UNICODE_DATA_FILE_URL,
     USER_AGENT,
 )
+
+logger = logging.getLogger("uniff")
 
 
 def download_file(url: str, options: FetchOptions) -> Optional[str]:

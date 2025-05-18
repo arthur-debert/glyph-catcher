@@ -1,14 +1,14 @@
 """
 Lua exporter implementation.
 """
+
 import logging
 from typing import Optional
 
 from ..validator import validate_lua_file
 from .base import BaseExporter
 
-logger = logging.getLogger('uniff')
-
+logger = logging.getLogger("uniff")
 
 
 class LuaExporter(BaseExporter):
@@ -69,7 +69,9 @@ class LuaExporter(BaseExporter):
                     aliases = aliases_data.get(code_point_hex, [])
                     # Handle special characters for Lua
                     char = data["char_obj"]
-                    logger.debug(f"Processing character U+{code_point_hex}: {data['name']}")
+                    logger.debug(
+                        f"Processing character U+{code_point_hex}: {data['name']}"
+                    )
                     if char == "\n":
                         char = "\\n"
                     elif char == "\r":

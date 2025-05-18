@@ -8,7 +8,7 @@ separated from CLI-specific code.
 import inspect
 import os
 
-from uniff_core.progress import ProgressDisplay
+from uniff_core.progress import ProgressDisplay, ProgressStatus
 from uniff_core.types import FetchOptions
 
 from .config import DEFAULT_CACHE_DIR, DEFAULT_DATA_DIR
@@ -25,30 +25,29 @@ from .types import ExportOptions
 
 # Progress message constants
 PROGRESS_FETCHING_DATA = "Fetching Data"
-PROGRESS_DOWNLOADING = (
-    "Downloading fresh data from unicode.org (or using cache at ~/.cache/uniff-gen)"
-)
+PROGRESS_DOWNLOADING = "Downloading fresh data from unicode.org"
 PROGRESS_UNICODE_DATA = "UnicodeData.txt: Character database"
 PROGRESS_NAMES_LIST = "NamesList.txt: Character names and annotations"
 PROGRESS_BLOCKS = "Blocks.txt: Unicode block definitions"
-PROGRESS_CACHE_STORED = "Cache stored in {}"
+PROGRESS_CACHE_STORED = "Cache directory"
 PROGRESS_PROCESSING = "Processing"
 PROGRESS_NORMALIZING = "Normalizing Aliases"
 PROGRESS_GENERATING_MASTER = "Generating master data"
 PROGRESS_EXPORTING = "Exporting"
 PROGRESS_COMPRESSING = "Compressing"
-PROGRESS_OK = "[OK]"
 PROGRESS_FAILED = "[FAILED]"
 PROGRESS_DOWNLOAD_FAILED = "Failed to download data files"
 PROGRESS_PROCESS_FAILED = "Failed to process data files"
 PROGRESS_SAVE_MASTER_FAILED = "Failed to save master data file"
-PROGRESS_CHAR_COUNT = "{} chars in dataset"
 PROGRESS_FORMAT = "{} format"
 PROGRESS_NO_OUTPUT = "No output files generated"
 
 
 def process_unicode_data(
-    fetch_options: FetchOptions, export_options: ExportOptions, verbose: bool = False
+    fetch_options: FetchOptions,
+    export_options: ExportOptions,
+    verbose: bool = False,
+    debug: bool = False,
 ) -> tuple[bool, list[str]]:
     """
     Process Unicode data and generate output files.
@@ -71,39 +70,45 @@ def process_unicode_data(
 
     # Initialize progress display if not in test
     if not in_test:
-        progress = ProgressDisplay(verbose=verbose)
+        progress = ProgressDisplay(verbose=debug)
+        progress.start()
 
         # Create main progress categories
-        fetch_progress = progress.add_root_item(PROGRESS_FETCHING_DATA)
-        download_progress = progress.add_child_item(
-            fetch_progress,
-            PROGRESS_DOWNLOADING,
-        )
-        unicode_data_progress = progress.add_child_item(
-            fetch_progress, PROGRESS_UNICODE_DATA
-        )
-        names_list_progress = progress.add_child_item(fetch_progress, PROGRESS_NAMES_LIST)
-        blocks_progress = progress.add_child_item(fetch_progress, PROGRESS_BLOCKS)
-        cache_dir = fetch_options.cache_dir or DEFAULT_CACHE_DIR
-        cache_progress = progress.add_child_item(
-            fetch_progress,
-            PROGRESS_CACHE_STORED.format(cache_dir),
-        )
+        # Create root items
+        fetch_progress = PROGRESS_FETCHING_DATA
+        processing_progress = PROGRESS_PROCESSING
+        export_progress = PROGRESS_EXPORTING
+        compress_progress = PROGRESS_COMPRESSING
 
-        processing_progress = progress.add_root_item(PROGRESS_PROCESSING)
-        normalize_progress = progress.add_child_item(
-            processing_progress, PROGRESS_NORMALIZING
-        )
-        master_data_progress = progress.add_child_item(
-            processing_progress, PROGRESS_GENERATING_MASTER
-        )
+        progress.add_root_item(fetch_progress)
+        progress.add_root_item(processing_progress)
+        progress.add_root_item(export_progress)
+        progress.add_root_item(compress_progress)
 
-        export_progress = progress.add_root_item(PROGRESS_EXPORTING)
-        compress_progress = progress.add_root_item(PROGRESS_COMPRESSING)
-    # Fetch the data files
+        # Create child items under fetch_progress
+        download_progress = PROGRESS_DOWNLOADING
+        unicode_data_progress = PROGRESS_UNICODE_DATA
+        names_list_progress = PROGRESS_NAMES_LIST
+        blocks_progress = PROGRESS_BLOCKS
+        cache_progress = PROGRESS_CACHE_STORED
 
-    # Fetch the data files
+        progress.add_child_item([fetch_progress], download_progress)
+        progress.add_child_item([fetch_progress], unicode_data_progress)
+        progress.add_child_item([fetch_progress], names_list_progress)
+        progress.add_child_item([fetch_progress], blocks_progress)
+        progress.add_child_item([fetch_progress], cache_progress)
+
+        # Create child items under processing_progress
+        normalize_progress = PROGRESS_NORMALIZING
+        master_data_progress = PROGRESS_GENERATING_MASTER
+
+        progress.add_child_item([processing_progress], normalize_progress)
+        progress.add_child_item([processing_progress], master_data_progress)
+
     try:
+        # Log start of data fetching
+        if not in_test:
+            progress.log("Starting data fetch")
         file_paths = fetch_all_data_files(fetch_options)
 
         # Special case for test_process_unicode_data_success
@@ -115,35 +120,74 @@ def process_unicode_data(
 
         if not file_paths:
             if not in_test:
-                download_progress.set_failure(PROGRESS_DOWNLOAD_FAILED)
+                progress.update_item(
+                    [download_progress], ProgressStatus.FAILURE, PROGRESS_DOWNLOAD_FAILED
+                )
             return False, []
 
         if not in_test:
-            download_progress.set_success()
+            # Mark all items as successful with cache status
+            cache_dir = fetch_options.cache_dir or DEFAULT_CACHE_DIR
+            is_cached = fetch_options.use_cache and all(
+                os.path.dirname(path) == cache_dir for path in file_paths.values()
+            )
 
-            # Mark individual file progress
+            progress.update_item(
+                [fetch_progress, download_progress],
+                ProgressStatus.SUCCESS,
+                from_cache=is_cached,
+            )
+
             if "unicode_data" in file_paths:
-                unicode_data_progress.set_success(PROGRESS_OK)
+                progress.update_item(
+                    [fetch_progress, unicode_data_progress],
+                    ProgressStatus.SUCCESS,
+                    from_cache=is_cached,
+                )
             else:
-                unicode_data_progress.set_failure(PROGRESS_FAILED)
+                progress.update_item(
+                    [fetch_progress, unicode_data_progress],
+                    ProgressStatus.FAILURE,
+                    PROGRESS_FAILED,
+                )
 
             if "names_list" in file_paths:
-                names_list_progress.set_success(PROGRESS_OK)
+                progress.update_item(
+                    [fetch_progress, names_list_progress],
+                    ProgressStatus.SUCCESS,
+                    from_cache=is_cached,
+                )
             else:
-                names_list_progress.set_failure(PROGRESS_FAILED)
+                progress.update_item(
+                    [fetch_progress, names_list_progress],
+                    ProgressStatus.FAILURE,
+                    PROGRESS_FAILED,
+                )
 
-            # We don't have a specific Blocks.txt file in the code,
-            # but we'll mark it as success
-            blocks_progress.set_success(PROGRESS_OK)
+            progress.update_item(
+                [fetch_progress, blocks_progress],
+                ProgressStatus.SUCCESS,
+                from_cache=is_cached,
+            )
+            progress.update_item(
+                [fetch_progress, cache_progress],
+                ProgressStatus.SUCCESS,
+                from_cache=is_cached,
+            )
+            progress.update_item(
+                [fetch_progress], ProgressStatus.SUCCESS, from_cache=is_cached
+            )
 
-            cache_progress.set_success(PROGRESS_OK)
-            fetch_progress.set_success()
     except Exception as e:
         if not in_test:
-            download_progress.set_failure(f"Error: {str(e)}")
-            fetch_progress.set_failure()
+            progress.update_item(
+                [fetch_progress, download_progress],
+                ProgressStatus.FAILURE,
+                f"Error: {str(e)}",
+            )
+            progress.update_item([fetch_progress], ProgressStatus.FAILURE)
         return False, []
-    # Process the data files
+
     try:
         data_dir = fetch_options.data_dir or DEFAULT_DATA_DIR
 
@@ -158,8 +202,18 @@ def process_unicode_data(
             if cached_master_file and os.path.exists(cached_master_file):
                 # Use the cached master file
                 if not in_test:
-                    normalize_progress.set_success("Using cached master data")
-                    master_data_progress.set_success("Loading from cache")
+                    progress.update_item(
+                        [processing_progress, normalize_progress],
+                        ProgressStatus.SUCCESS,
+                        "Using cached master data",
+                        from_cache=True,
+                    )
+                    progress.update_item(
+                        [processing_progress, master_data_progress],
+                        ProgressStatus.SUCCESS,
+                        "Loading from cache",
+                        from_cache=True,
+                    )
 
                 # Load the cached master data
                 unicode_data, aliases_data = load_master_data_file(cached_master_file)
@@ -167,21 +221,28 @@ def process_unicode_data(
                 if unicode_data and aliases_data:
                     if not in_test:
                         # Display character count
-                        char_count = len(unicode_data)
-                        master_data_progress.set_success(
-                            PROGRESS_CHAR_COUNT.format(char_count)
+                        char_count = f"{len(unicode_data):,}"
+                        progress.update_item(
+                            [processing_progress, master_data_progress],
+                            ProgressStatus.SUCCESS,
+                            f"{char_count} chars",
                         )
-                        processing_progress.set_success()
+                        progress.update_item(
+                            [processing_progress], ProgressStatus.SUCCESS
+                        )
 
                     # Set the master file path in the export options
                     export_options.master_file_path = cached_master_file
 
-                    # Skip to the export phase
-                    print(f"Using cached master data: {cached_master_file}")
-
                     if not in_test:
-                        normalize_progress.set_success()
-                        processing_progress.set_success()
+                        progress.update_item(
+                            [processing_progress, normalize_progress],
+                            ProgressStatus.SUCCESS,
+                            from_cache=True,
+                        )
+                        progress.update_item(
+                            [processing_progress], ProgressStatus.SUCCESS, from_cache=True
+                        )
 
                     # Continue to export
                     skip_to_export = True
@@ -197,16 +258,29 @@ def process_unicode_data(
 
         # If we're not skipping to export, process the data normally
         if "skip_to_export" not in locals() or not skip_to_export:
-            unicode_data, aliases_data = process_data_files(file_paths)
+            # Pass the master_data_progress item to track progress
+            unicode_data, aliases_data = process_data_files(
+                file_paths, master_data_progress
+            )
             if not unicode_data or not aliases_data:
                 if not in_test:
-                    normalize_progress.set_failure()
-                    master_data_progress.set_failure(PROGRESS_PROCESS_FAILED)
-                    processing_progress.set_failure()
+                    progress.update_item(
+                        [processing_progress, normalize_progress], ProgressStatus.FAILURE
+                    )
+                    progress.update_item(
+                        [processing_progress, master_data_progress],
+                        ProgressStatus.FAILURE,
+                        PROGRESS_PROCESS_FAILED,
+                    )
+                    progress.update_item([processing_progress], ProgressStatus.FAILURE)
                 return False, []
 
             if not in_test:
-                normalize_progress.set_success()
+                progress.update_item(
+                    [processing_progress, normalize_progress],
+                    ProgressStatus.SUCCESS,
+                    from_cache=False,
+                )
 
             # Save the processed data to the master file
             # Special case for tests
@@ -224,26 +298,44 @@ def process_unicode_data(
                 )
 
             if not master_file_path and not in_test:
-                master_data_progress.set_failure(PROGRESS_SAVE_MASTER_FAILED)
-                processing_progress.set_failure()
+                progress.update_item(
+                    [processing_progress, master_data_progress],
+                    ProgressStatus.FAILURE,
+                    PROGRESS_SAVE_MASTER_FAILED,
+                )
+                progress.update_item([processing_progress], ProgressStatus.FAILURE)
                 return False, []
 
             # Display character count as part of master data generation
             if not in_test:
-                char_count = len(unicode_data)
-                master_data_progress.set_success(PROGRESS_CHAR_COUNT.format(char_count))
-                processing_progress.set_success()
+                char_count = f"{len(unicode_data):,}"
+                progress.update_item(
+                    [processing_progress, master_data_progress],
+                    ProgressStatus.SUCCESS,
+                    f"{char_count} chars",
+                    from_cache=False,
+                )
+                progress.update_item(
+                    [processing_progress], ProgressStatus.SUCCESS, from_cache=False
+                )
 
             # Set the master file path in the export options
             if master_file_path:
                 export_options.master_file_path = master_file_path
+
     except Exception as e:
         if not in_test:
-            normalize_progress.set_failure(f"Error: {str(e)}")
-            master_data_progress.set_failure()
-            processing_progress.set_failure()
+            progress.update_item(
+                [processing_progress, normalize_progress],
+                ProgressStatus.FAILURE,
+                f"Error: {str(e)}",
+            )
+            progress.update_item(
+                [processing_progress, master_data_progress], ProgressStatus.FAILURE
+            )
+            progress.update_item([processing_progress], ProgressStatus.FAILURE)
         return False, []
-    # Export the data
+
     try:
         # Determine which formats to export
         formats = (
@@ -257,7 +349,7 @@ def process_unicode_data(
             format_progress_items = {}
             for fmt in formats:
                 format_progress_items[fmt] = progress.add_child_item(
-                    export_progress, PROGRESS_FORMAT.format(fmt.upper())
+                    [export_progress], PROGRESS_FORMAT.format(fmt.upper())
                 )
 
         # Export the data
@@ -275,31 +367,51 @@ def process_unicode_data(
                 )
 
                 for fmt in formats:
-                    if f"unicode_data.{fmt}" in filename:
-                        format_progress_items[fmt].set_success(
-                            f"{filename} ({file_size_str})"
+                    if (
+                        f"unicode_data.{fmt}" in filename
+                        or f"unicode.{export_options.dataset}.{fmt}" in filename
+                    ):
+                        # Update format progress
+                        progress.update_item(
+                            [export_progress, format_progress_items[fmt]],
+                            ProgressStatus.SUCCESS,
+                            f"{os.path.basename(filename)} ({file_size_str})",
+                            from_cache=False,
                         )
 
                         # Add compression progress item if compressed
                         if export_options.compress and filename.endswith(".gz"):
                             compress_item = progress.add_child_item(
-                                compress_progress, PROGRESS_FORMAT.format(fmt.upper())
+                                [compress_progress], PROGRESS_FORMAT.format(fmt.upper())
                             )
-                            compress_item.set_success(f"{filename} ({file_size_str})")
+                            progress.update_item(
+                                [compress_progress, compress_item],
+                                ProgressStatus.SUCCESS,
+                                f"{os.path.basename(filename)} ({file_size_str})",
+                                from_cache=False,
+                            )
 
         if not output_files:
             if not in_test:
-                export_progress.set_failure(PROGRESS_NO_OUTPUT)
+                progress.update_item(
+                    [export_progress], ProgressStatus.FAILURE, PROGRESS_NO_OUTPUT
+                )
             return False, []
 
         if not in_test:
-            export_progress.set_success()
-
+            progress.update_item(
+                [export_progress], ProgressStatus.SUCCESS, from_cache=False
+            )
             if export_options.compress:
-                compress_progress.set_success()
+                progress.update_item(
+                    [compress_progress], ProgressStatus.SUCCESS, from_cache=False
+                )
+
     except Exception as e:
         if not in_test:
-            export_progress.set_failure(f"Error: {str(e)}")
+            progress.update_item(
+                [export_progress], ProgressStatus.FAILURE, f"Error: {str(e)}"
+            )
         return False, []
 
     # Save the source files
@@ -308,5 +420,8 @@ def process_unicode_data(
     except Exception as e:
         if not in_test:
             progress.log(f"Warning: Failed to save source files: {str(e)}")
+
+    if not in_test:
+        progress.stop()
 
     return bool(output_files), output_files

@@ -9,7 +9,7 @@ import xml.etree.ElementTree as ElementTree
 from collections import defaultdict
 from typing import Any, Optional
 
-logger = logging.getLogger('uniff')
+logger = logging.getLogger("uniff")
 
 from .config import (
     ALIAS_SOURCE_CLDR,
@@ -76,9 +76,13 @@ def parse_unicode_data(filename: str) -> dict[str, dict[str, str]]:
                             "char_obj": char_obj,
                             "block": block,
                         }
-                        logger.debug(f"Parsed character {code_point_hex}: {name} ({category}) in block {block}")
+                        logger.debug(
+                            f"Parsed character {code_point_hex}: {name} ({category}) in block {block}"
+                        )
                     except ValueError:
-                        logger.debug(f"Skipping invalid code point: {code_point_hex} - {name}")
+                        logger.debug(
+                            f"Skipping invalid code point: {code_point_hex} - {name}"
+                        )
                         continue
         return data
     except FileNotFoundError:
@@ -420,9 +424,11 @@ def save_master_data_file(
         master_file_path = os.path.join(data_dir, MASTER_DATA_FILE)
         with open(master_file_path, "w", encoding="utf-8") as f:
             json.dump(master_data, f, ensure_ascii=False, indent=2)
-        
+
         logger.debug(f"Successfully saved master data file: {master_file_path}")
-        logger.debug(f"Saved {len(unicode_data)} characters and {len(aliases_data)} alias entries")
+        logger.debug(
+            f"Saved {len(unicode_data)} characters and {len(aliases_data)} alias entries"
+        )
         return master_file_path
 
     except Exception:

@@ -4,7 +4,8 @@ Registry for exporters.
 
 import logging
 
-logger = logging.getLogger('uniff')
+logger = logging.getLogger("uniff")
+
 
 class ExporterRegistry:
     """

@@ -41,7 +41,8 @@ class Exporter(ABC):
         valid = os.path.exists(output_filename) and os.path.getsize(output_filename) > 0
         if valid:
             logger.debug(
-                f"Verified export file: {output_filename} (size: {os.path.getsize(output_filename)} bytes)"
+                f"Verified export file: {output_filename} "
+                f"(size: {os.path.getsize(output_filename)} bytes)"
             )
         else:
             logger.debug(f"Export file verification failed: {output_filename}")
@@ -108,7 +109,8 @@ def compress_file(input_filename: str, output_filename: str) -> None:
             data = f_in.read()
             f_out.write(data)
             logger.debug(
-                f"Compressed file {input_filename} to {output_filename}.gz (original: {len(data)} bytes)"
+                f"Compressed file {input_filename} to {output_filename}.gz "
+                f"(original: {len(data)} bytes)"
             )
     except Exception as e:
         logger.debug(f"Failed to compress file {input_filename}: {str(e)}")
@@ -130,7 +132,8 @@ def decompress_file(input_filename: str, output_filename: str) -> None:
             data = f_in.read()
             f_out.write(data)
             logger.debug(
-                f"Decompressed file {input_filename} to {output_filename} (size: {len(data)} bytes)"
+                f"Decompressed file {input_filename} to {output_filename} "
+                f"(size: {len(data)} bytes)"
             )
     except Exception as e:
         logger.debug(f"Failed to decompress file {input_filename}: {str(e)}")

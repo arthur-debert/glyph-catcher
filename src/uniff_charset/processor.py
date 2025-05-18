@@ -252,7 +252,7 @@ def normalize_alias(alias: str) -> str:
 
 
 def process_data_files(
-    file_paths: dict[str, str],
+    file_paths: dict[str, str], progress_item=None
 ) -> tuple[dict[str, dict[str, str]], dict[str, list[str]]]:
     """
     Process Unicode data files.
@@ -292,12 +292,37 @@ def process_data_files(
     aliases_data = defaultdict(list)
     alias_sets = defaultdict(set)  # Use sets for deduplication
 
+    # Calculate total work to be done - count total unique code points
+    total_code_points = len(
+        set().union(
+            formal_aliases.keys() if ALIAS_SOURCE_FORMAL in alias_sources else set(),
+            informative_aliases.keys()
+            if ALIAS_SOURCE_INFORMATIVE in alias_sources
+            else set(),
+            cldr_annotations.keys() if ALIAS_SOURCE_CLDR in alias_sources else set(),
+        )
+    )
+
+    # Initialize progress counter
+    processed_code_points = 0
+
     # Process and add formal aliases if configured
     if ALIAS_SOURCE_FORMAL in alias_sources:
         for code_point, aliases in formal_aliases.items():
             for alias in aliases:
                 normalized_alias = normalize_alias(alias)
-                alias_sets[code_point].add(normalized_alias)
+                if normalized_alias not in alias_sets[code_point]:
+                    alias_sets[code_point].add(normalized_alias)
+            processed_code_points += 1
+            if progress_item:
+                progress_item.update_progress(
+                    processed_code_points,
+                    total_code_points,
+                    (
+                        f"Processing formal aliases "
+                        f"({processed_code_points}/{total_code_points})"
+                    ),
+                )
 
     # Process and add informative aliases if configured
     if ALIAS_SOURCE_INFORMATIVE in alias_sources:
@@ -305,14 +330,36 @@ def process_data_files(
             code_point_hex = code_point.upper()
             for alias in aliases:
                 normalized_alias = normalize_alias(alias)
-                alias_sets[code_point_hex].add(normalized_alias)
+                if normalized_alias not in alias_sets[code_point_hex]:
+                    alias_sets[code_point_hex].add(normalized_alias)
+            processed_code_points += 1
+            if progress_item:
+                progress_item.update_progress(
+                    processed_code_points,
+                    total_code_points,
+                    (
+                        f"Processing informative aliases "
+                        f"({processed_code_points}/{total_code_points})"
+                    ),
+                )
 
     # Process and add CLDR annotations if configured
     if ALIAS_SOURCE_CLDR in alias_sources:
         for code_point, annotations in cldr_annotations.items():
             for annotation in annotations:
                 normalized_alias = normalize_alias(annotation)
-                alias_sets[code_point].add(normalized_alias)
+                if normalized_alias not in alias_sets[code_point]:
+                    alias_sets[code_point].add(normalized_alias)
+            processed_code_points += 1
+            if progress_item:
+                progress_item.update_progress(
+                    processed_code_points,
+                    total_code_points,
+                    (
+                        f"Processing CLDR annotations "
+                        f"({processed_code_points}/{total_code_points})"
+                    ),
+                )
 
     # Convert sets back to lists for compatibility with the rest of the codebase
     for code_point, alias_set in alias_sets.items():

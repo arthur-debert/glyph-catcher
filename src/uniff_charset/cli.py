@@ -13,7 +13,7 @@ from uniff_core.types import FetchOptions
 
 from .config import (
     DATASET_EVERYDAY,
-    DATASETS,
+    DATASET_TYPES,
     DEFAULT_CACHE_DIR,
     DEFAULT_DATA_DIR,
     TMP_CACHE_DIR,
@@ -97,7 +97,7 @@ def cli():
 )
 @click.option(
     "--dataset",
-    type=click.Choice(DATASETS),
+    type=click.Choice(DATASET_TYPES),
     default=DATASET_EVERYDAY,
     help=f"Dataset to use (default: {DATASET_EVERYDAY})",
 )
@@ -216,18 +216,22 @@ def generate(
 
     # Final output
     if success:
-        click.echo(
-            click.style("✓ Unicode data processing completed successfully!", fg="green")
-        )
-        click.echo("Generated files:")
-        for file_path in output_files:
-            click.echo(f"  - {file_path}")
-        return 0
-    else:
-        click.echo(click.style("✗ Unicode data processing failed.", fg="red"))
-        if exit_on_error:
-            return 1
-        return 0
+        if output_files:
+            click.echo(
+                click.style(
+                    "✓ Unicode data processing completed successfully!",
+                    fg="green",
+                )
+            )
+            click.echo("Generated files:")
+            for file_path in output_files:
+                click.echo(f"  - {file_path}")
+            return 0
+        else:
+            click.echo(click.style("✗ Unicode data processing failed.", fg="red"))
+            if exit_on_error:
+                return 1
+            return 0
 
 
 @cli.command()

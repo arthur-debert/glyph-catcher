@@ -81,8 +81,7 @@ def process_unicode_data(
 
             # If looking for a specific code point or it has enough aliases
             if (
-                specific_code_point
-                and code_point.upper() == specific_code_point.upper()
+                specific_code_point and code_point.upper() == specific_code_point.upper()
             ) or (alias_count > min_aliases and not specific_code_point):
                 characters_with_many_aliases.append(
                     {
@@ -144,9 +143,9 @@ def display_characters(
             char_data["aliases"] if show_all_aliases else char_data["aliases"][:5]
         )
         limit_display = None if show_all_aliases else 5
-        aliases_formatted = format_aliases(
-            aliases_sample, limit_display, wrap_width=70
-        )[4:]
+        aliases_formatted = format_aliases(aliases_sample, limit_display, wrap_width=70)[
+            4:
+        ]
         print(f"   Aliases: {aliases_formatted}")
         print()
 
@@ -290,15 +289,11 @@ def main():
                 return 0
 
             # Display characters in the terminal
-            display_characters(
-                chars_data, args.limit, args.min_aliases, args.all_aliases
-            )
+            display_characters(chars_data, args.limit, args.min_aliases, args.all_aliases)
 
             # Save to file if requested
             if args.output:
-                save_to_file(
-                    chars_data, args.output, args.min_aliases, args.all_aliases
-                )
+                save_to_file(chars_data, args.output, args.min_aliases, args.all_aliases)
                 print(f"\nResults saved to {args.output}")
 
     except FileNotFoundError:

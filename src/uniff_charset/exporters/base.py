@@ -1,12 +1,12 @@
 """
 Base exporter class.
 """
+
 import logging
 from abc import ABC, abstractmethod
 from typing import Optional
 
-logger = logging.getLogger('uniff')
-
+logger = logging.getLogger("uniff")
 
 
 class BaseExporter(ABC):

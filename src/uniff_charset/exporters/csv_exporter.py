@@ -1,6 +1,7 @@
 """
 CSV exporter implementation.
 """
+
 import csv
 import logging
 from typing import Optional
@@ -8,8 +9,7 @@ from typing import Optional
 from ..validator import validate_csv_file
 from .base import BaseExporter
 
-logger = logging.getLogger('uniff')
-
+logger = logging.getLogger("uniff")
 
 
 class CSVExporter(BaseExporter):

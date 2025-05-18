@@ -10,14 +10,13 @@ import logging
 import os
 
 from .config import DEFAULT_CACHE_DIR, DEFAULT_DATA_DIR
-
-logger = logging.getLogger('uniff')
 from .exporter import export_data, save_source_files
 from .fetcher import fetch_all_data_files
 from .processor import process_data_files, save_master_data_file
 from .progress import ProgressDisplay
 from .types import ExportOptions, FetchOptions
 
+logger = logging.getLogger("uniff")
 # Progress message constants
 PROGRESS_FETCHING_DATA = "Fetching Data"
 PROGRESS_DOWNLOADING = (
@@ -100,9 +99,13 @@ def process_unicode_data(
     # Fetch the data files
     try:
         logger.debug("Starting Unicode data processing")
-        logger.debug(f"Fetch options: cache={fetch_options.use_cache}, temp_cache={fetch_options.use_temp_cache}")
-        logger.debug(f"Export options: format={export_options.format_type}, output_dir={export_options.output_dir}")
-        
+        logger.debug(
+            f"Fetch options: cache={fetch_options.use_cache}, temp_cache={fetch_options.use_temp_cache}"
+        )
+        logger.debug(
+            f"Export options: format={export_options.format_type}, output_dir={export_options.output_dir}"
+        )
+
         file_paths = fetch_all_data_files(fetch_options)
 
         # Special case for test_process_unicode_data_success
@@ -255,5 +258,7 @@ def process_unicode_data(
         if not in_test:
             progress.log(f"Warning: Failed to save source files: {str(e)}")
 
-    logger.debug(f"Processing completed successfully with {len(output_files)} output files")
+    logger.debug(
+        f"Processing completed successfully with {len(output_files)} output files"
+    )
     return bool(output_files), output_files

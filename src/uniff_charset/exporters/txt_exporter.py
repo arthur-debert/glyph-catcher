@@ -1,14 +1,14 @@
 """
 TXT exporter implementation.
 """
+
 import logging
 from typing import Optional
 
 from ..validator import validate_txt_file
 from .base import BaseExporter
 
-logger = logging.getLogger('uniff')
-
+logger = logging.getLogger("uniff")
 
 
 class TxtExporter(BaseExporter):
